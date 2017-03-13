@@ -109,12 +109,12 @@ var updatePlanetPlot = function(){
 //        .style("fill", function(d){return d.planetColor})
 
 }
-var counter = 0 ;
+//var counter = 0 ;
 planetTimer = setInterval(function(){
-    counter += 1 ;
-    console.log(counter)
+//    counter += 1 ;
+//    console.log(counter)
     requestPlanetPosition(currentGlobePosition);
-}, 2000);
+}, 2500);
 
 
 var getPosition = function(callback){
