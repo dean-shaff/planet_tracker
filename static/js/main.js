@@ -1,22 +1,19 @@
-var currentPosition ;
 var planetData  ;
 var height = $(window).height();
 var width = $(window).width();
+var rad = Math.min(width, height) / 2 - 100;
+
 // Define the div for the tooltip
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
-var rad = Math.min(width, height) / 2 - 100;
-
-var getPosition = function(){
-    return {'lat': 41.664515, 'lon': -91.500888, 'elevation': 203};
-}
-
+// Turn a radian angle into degree
 var toDegree = function(radian){
+    return (180.*radian)/(Math.PI)
 }
 
-
+// Take the data from the POST request and create the graph.
 var processPlanetPositions = function(msg){
     planetData = JSON.parse(msg.result) ;
     // Canvas
@@ -50,61 +47,41 @@ var processPlanetPositions = function(msg){
         d.planetColor = planetColor;
 //        console.log(d.name, d.az, rad_planet, rad);
         d.az_adj = d.az - Math.PI/2.0 ;
-        d.cx = "{:.4f}".format(d.rad_planet*Math.cos(d.az_adj))
-        d.cy = "{:.4f}".format(d.rad_planet*Math.sin(d.az_adj))
+        d.cx = "{:.1f}".format(d.rad_planet*Math.cos(d.az_adj))
+        d.cy = "{:.1f}".format(d.rad_planet*Math.sin(d.az_adj))
         console.log(d.name, d.az, d.alt, d.cx, d.cy);
-//        svg.append('circle')
-//            .attr('cx', d.cx)
-//            .attr('cy', d.cy)
-//            .style("fill", d.planetColor)
-//            .attr('r',d.r)
-//            .on("mouseover", function() {
-////                console.log(d3.event.pageX, d3.event.pageY, parseFloat(d.cx) + d.r + width/2,(parseFloat(d.cy) - d.r + height/2))
-//                div.transition()
-//                    .duration(200)
-//                    .style("opacity", .9);
-//                div.html("{}<br/>{:.4f} {:.4f}".format(d.name,d.az,d.alt))
-//                      .style("left", (parseFloat(d.cx) + width/2) + "px")
-//                      .style("top", (parseFloat(d.cy)+ height/2) + "px")
-//                d3.select(this)
-//                    .transition()
-//                    .duration(200)
-//                    .attr('stroke-width', 3)
-//             })
-//            .on("mouseout", function() {
-//                div.transition()
-//                    .duration(200)
-//                    .style("opacity", 0);
-//                d3.select(this)
-//                    .transition()
-//                    .duration(200)
-//                    .attr('stroke-width', 0)
-//            })
     });
+    var divWidth, divHeight, divPadding, divX, divY ;
     var circles = svg.selectAll('circles')
         .data(planetData)
         .enter()
         .append('circle')
-            .attr('cx', function(d){return parseFloat(d.cx)})
-            .attr('cy', function(d){return parseFloat(d.cy)})
+            .attr('cx', function(d){return d.cx})
+            .attr('cy', function(d){return d.cy})
             .attr('class', function(d){return d.name})
             .attr('r', function(d){return parseFloat(d.r)})
-            .attr('stroke', 'black')
+            .attr('stroke', "rgba(0,0,0,0.2)")
             .attr('stroke-width', 0)
 //            .attr('transform', function(d){ return "translate({:.4f},{:.4f})".format(d.cx, d.cy) })
             .style("fill", function(d){return d.planetColor})
             .on("mouseover", function(d) {
+
 //                console.log(d3.event.pageX, d3.event.pageY, parseFloat(d.cx) + d.r + width/2,(parseFloat(d.cy) - d.r + height/2))
                 div.transition()
                     .duration(200)
                     .style("opacity", .9);
-                div.html("{}<br/>{:.4f} {:.4f}".format(d.name,toDegree(d.az),toDegree(d.alt)))
-                      .style("left", (parseFloat(d.cx) + width/2) + "px")
-                      .style("top", (parseFloat(d.cy) + height/2) + "px")
+                div.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg;".format(d.name,toDegree(d.az),toDegree(d.alt)))
+                divWidth = parseInt(div.style('width'), 10);
+                divHeight = parseInt(div.style('max-height'), 10);
+                divPadding = parseInt(div.style('padding'), 10);
+                divX = parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2 ;
+                divY = parseFloat(d.cy) + height/2 - divHeight - d.r - divPadding
+                div.style("transform","translate({}px,{}px)".format(divX,divY))
+                    .style("background", "rgba(0,0,0,0.2)")
                 d3.select(this)
                     .transition()
                     .duration(200)
-                    .attr('stroke-width', 3)
+                    .attr('stroke-width', 2)
              })
             .on("mouseout", function(d) {
                 div.transition()
@@ -118,9 +95,26 @@ var processPlanetPositions = function(msg){
 
 }
 
-$(document).ready(function(){
-    currentPosition = getPosition();
-	$.ajax({
+var getPosition = function(callback){
+    if (navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(function(position){
+            var pos = {
+                lat: position.coords.latitude,
+                lon: position.coords.longitude,
+                elevation: 0
+            }
+            callback(pos)
+        }, function () {
+            console.log("Couldn't get geolocation.");
+        });
+    } else {
+        console.log("Browser doesn't support geolocation");
+    }
+}
+
+var requestPlanetPositionCallback = function(currentPosition){
+    console.log(currentPosition);
+    $.ajax({
 		type:"POST",
 		url: $SCRIPT_ROOT+"/get_planets",
 		data : JSON.stringify(currentPosition),
@@ -131,6 +125,10 @@ $(document).ready(function(){
 			console.log("Failure message from server: "+msg);
 		}
 	});
+}
+
+$(document).ready(function(){
+    getPosition(requestPlanetPositionCallback);
 });
 
 

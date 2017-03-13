@@ -44,7 +44,7 @@ def get_planets():
         module_logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, planet.az, planet.alt,
                                                                         planet.ra, planet.dec))
         planets[pl_key] = {'az': float(planet.az), 'alt': float(planet.alt)}
-        planet_list.append({'name': pl_key, 'az': float(planet.az), 'alt': float(planet.alt)})
+        planet_list.append({'name': pl_key.capitalize(), 'az': float(planet.az), 'alt': float(planet.alt)})
 
     return jsonify(result=json.dumps(planet_list))
 

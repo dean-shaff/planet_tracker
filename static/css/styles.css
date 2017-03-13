@@ -29,10 +29,11 @@ hr{
 div.tooltip {
     position: absolute;
     text-align: center;
-    width: 60px;
-    height: 40px;
-    padding: 2px;
-    font: 12px sans-serif;
+    width: 70px;
+    height: auto;
+    max-height: 60px;
+    padding: 4px;
+    font: 14px sans-serif;
     background: lightsteelblue;
     border: 0px;
     border-radius: 8px;
