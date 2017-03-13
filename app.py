@@ -41,7 +41,7 @@ def get_planets():
     for pl_key in planets:
         planet = planets[pl_key]
         planet.compute(observer)
-        module_logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, planet.az, planet.alt,
+        app.logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, planet.az, planet.alt,
                                                                         planet.ra, planet.dec))
         planets[pl_key] = {'az': float(planet.az), 'alt': float(planet.alt)}
         planet_list.append({'name': pl_key.capitalize(), 'az': float(planet.az), 'alt': float(planet.alt)})
@@ -50,14 +50,15 @@ def get_planets():
 
 @app.route("/")
 def main():
+    app.logger.debug("Rendering index.html")
     return render_template("index.html")
 
 if __name__ == '__main__':
-    module_logger.setLevel(logging.INFO)
+    app.logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(levelname)s-%(name)s-%(message)s")
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
-    module_logger.addHandler(sh)
+    app.logger.addHandler(sh)
 
     # pos_IC = {'long': 41.664515, 'lat': -91.500888, 'elevation': 203}
     # print(get_planets())

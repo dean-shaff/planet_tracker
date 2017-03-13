@@ -10,7 +10,8 @@ var rad = Math.min(width, height) / 2 - 20;
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
-
+var divInitX = parseFloat(div.style('left'));
+var divInitY = parseFloat(div.style('top'));
 // Turn a radian angle into degree
 var toDegree = function(radian){
     return (180.*radian)/(Math.PI)
@@ -51,7 +52,7 @@ var setupPlanetPlot = function(){
     // Center
     staticGroup.append("circle")
       .attr("class", "center")
-      .attr("r",5)
+      .attr("r",2)
       .style("fill", "rgba(0,0,0,0.4)");
     // Horizon
     staticGroup.append("circle")
@@ -68,7 +69,6 @@ var updatePlanetPlot = function(){
     var divWidth, divHeight, divPadding, divX, divY ;
     var circles = dynamicGroup.selectAll('circle')
         .data(planetData)
-
     circles.exit().remove() ;
     circles.enter().append('circle')
         .attr('cx', function(d){return d.cx})
@@ -77,6 +77,7 @@ var updatePlanetPlot = function(){
         .attr('r', function(d){return parseFloat(d.r)})
         .attr('stroke', "rgba(0,0,0,0.2)")
         .attr('stroke-width', 0)
+        .style("fill", function(d){return d.planetColor})
         .style("fill", function(d){return d.planetColor})
         .on("mouseover", function(d) {
 //          console.log(d3.event.pageX, d3.event.pageY, parseFloat(d.cx) + d.r + width/2,(parseFloat(d.cy) - d.r + height/2))
@@ -87,10 +88,13 @@ var updatePlanetPlot = function(){
             divWidth = parseInt(div.style('width'), 10);
             divHeight = parseInt(div.style('max-height'), 10);
             divPadding = parseInt(div.style('padding'), 10);
-            divX = parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2 ;
-            divY = parseFloat(d.cy) + height/2 - divHeight - d.r - divPadding
-            div.style("transform","translate({}px,{}px)".format(divX,divY))
-                .style("background", "rgba(0,0,0,0.2)")
+            divX = parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2 + divInitX;
+            divY = parseFloat(d.cy) + height/2 - divHeight - d.r - divPadding + divInitY;
+//            Using translate would be nice, but it doens't seem to update.
+//            div.style("transform","translate({:.2f}px,{:.2f}px)".format(divX,divY))
+            div.style('left',"{}px".format(divX))
+               .style('top', "{}px".format(divY))
+               .style("background", "rgba(0,0,0,0.2)")
             d3.select(this)
                 .transition()
                 .duration(200)
@@ -106,6 +110,7 @@ var updatePlanetPlot = function(){
                 .attr('stroke-width', 0)
         })
     circles.merge(circles)
+
 //        .style("fill", function(d){return d.planetColor})
 
 }
