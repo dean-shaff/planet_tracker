@@ -65,10 +65,10 @@ var setupPlanetPlot = function(){
 }
 
 var updatePlanetPlot = function(){
-
     var divWidth, divHeight, divPadding, divX, divY ;
     var circles = dynamicGroup.selectAll('circle')
         .data(planetData)
+
     circles.exit().remove() ;
     circles.enter().append('circle')
         .attr('cx', function(d){return d.cx})
@@ -88,13 +88,14 @@ var updatePlanetPlot = function(){
             divWidth = parseInt(div.style('width'), 10);
             divHeight = parseInt(div.style('max-height'), 10);
             divPadding = parseInt(div.style('padding'), 10);
-            divX = parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2 + divInitX;
-            divY = parseFloat(d.cy) + height/2 - divHeight - d.r - divPadding + divInitY;
+            divX = parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2; // + divInitX;
+            divY = parseFloat(d.cy) + height/2 - divHeight - d.r - divPadding; // + divInitY;
 //            Using translate would be nice, but it doens't seem to update.
-//            div.style("transform","translate({:.2f}px,{:.2f}px)".format(divX,divY))
-            div.style('left',"{}px".format(divX))
-               .style('top', "{}px".format(divY))
-               .style("background", "rgba(0,0,0,0.2)")
+            div.style("transform","translate({:.2f}px,{:.2f}px)".format(divX,divY))
+                .style("background", "rgba(0,0,0,0.2)")
+//            console.log(div.style('left'), div.style('top'))
+//          div.style('left',"{}px".format(divX))
+//                .style('top', "{}px".format(divY))
             d3.select(this)
                 .transition()
                 .duration(200)
@@ -110,8 +111,14 @@ var updatePlanetPlot = function(){
                 .attr('stroke-width', 0)
         })
     circles.merge(circles)
+        .attr('cx', function(d){return d.cx})
+        .attr('cy', function(d){return d.cy})
+        .attr('class', function(d){return d.name})
+        .attr('r', function(d){return parseFloat(d.r)})
+        .attr('stroke', "rgba(0,0,0,0.2)")
+        .attr('stroke-width', 0)
+        .style("fill", function(d){return d.planetColor})
 
-//        .style("fill", function(d){return d.planetColor})
 
 }
 //var counter = 0 ;
@@ -119,7 +126,7 @@ planetTimer = setInterval(function(){
 //    counter += 1 ;
 //    console.log(counter)
     requestPlanetPosition(currentGlobePosition);
-}, 2500);
+}, 2000);
 
 
 var getPosition = function(callback){

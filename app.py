@@ -14,6 +14,8 @@ observer.epoch = ephem.J2000
 app = Flask(__name__)
 module_logger = logging.getLogger(__name__)
 
+# startup_time = datetime.datetime.utcnow()
+
 @app.route("/get_planets", methods=['POST'])
 def get_planets():
     """
@@ -27,8 +29,10 @@ def get_planets():
     observer.lon = str(current_position['lon'])
     observer.lat = str(current_position['lat'])
     observer.elevation = current_position['elevation']
-    observer.date = datetime.datetime.utcnow() # + datetime.timedelta(hours=10)
-
+    # global startup_time
+    # startup_time += datetime.timedelta(hours=1)
+    # observer.date = startup_time
+    observer.date = datetime.datetime.utcnow()
     planets = {}
     planets['mercury'] = ephem.Mercury()
     planets['venus'] = ephem.Venus()
