@@ -1,8 +1,8 @@
 var planetData  ;
 var height = $(window).height();
 var width = $(window).width();
-var rad = Math.min(width, height) / 2 - 100;
-
+var rad = Math.min(width, height) / 2 ;
+console.log(rad);
 // Define the div for the tooltip
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -37,7 +37,7 @@ var processPlanetPositions = function(msg){
 
     planetData.forEach(function(d){
         d.rad_planet = (rad*((Math.PI/2.0)-Math.abs(d.alt)))/(Math.PI/2.0);
-        d.r = 20
+        d.r = parseInt(rad / 25., 10);
         var planetColor ;
         if (d.alt >= 0){
             planetColor = "rgba(255,204,0,1.0)";
