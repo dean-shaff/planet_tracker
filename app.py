@@ -53,7 +53,7 @@ def main():
     return render_template("index.html")
 
 if __name__ == '__main__':
-    module_logger.setLevel(logging.DEBUG)
+    module_logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(levelname)s-%(name)s-%(message)s")
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
