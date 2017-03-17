@@ -39,3 +39,12 @@ div.tooltip {
     border-radius: 8px;
     pointer-events: none;
 }
+
+a.no-format {
+    text-decoration:none;
+    color:#222;
+}
+
+a:hover {
+    color:#ce0e25;
+}

@@ -4,12 +4,13 @@ var planetTimer ;
 var svg, staticGroup, dynamicGroup;
 var height = $(window).height();
 var width = $(window).width();
-var rad = Math.min(width, height) / 2 - 20;
-
+var rad = Math.min(width, height) / 2 - 40;
+var updateRate = 2000 ;
 // Define the div for the tooltip
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
+
 var divInitX = parseFloat(div.style('left'));
 var divInitY = parseFloat(div.style('top'));
 // Turn a radian angle into degree
@@ -20,24 +21,45 @@ var toDegree = function(radian){
 var setPlanetData = function(msg){
     planetData = JSON.parse(msg.result) ;
     planetData.forEach(function(d){
-        d.rad_planet = (rad*((Math.PI/2.0)-Math.abs(d.alt)))/(Math.PI/2.0);
-        d.r = parseInt(rad / 25., 10);
+        d.radialPos= (rad*((Math.PI/2.0)-Math.abs(d.alt)))/(Math.PI/2.0);
+        d.ry = d.size * parseInt((rad)/ 25., 10);
+        d.rx = (d.ry) * ((rad-d.radialPos) / rad);
+//        console.log(d.name, d.ry, d.rx, d.radialPos, rad)
         var planetColor ;
+        var strokeWidth
+//        console.log(d.color.format(1.0));
         if (d.alt >= 0){
-            planetColor = "rgba(255,204,0,1.0)";
+            planetColor = d.color.format(0.8);
+            strokeWidth = 0 ;
         }else{
-//            console.log("planet {} is below horizon".format(d.name));
-            planetColor = "rgba(255,204,0,0.4)";
+            planetColor = d.color.format(0.0);
+            strokeWidth = 1 ;
         }
         d.planetColor = planetColor;
+        d.strokeWidth = strokeWidth;
 //        console.log(d.name, d.az, rad_planet, rad);
         d.az_adj = d.az - Math.PI/2.0 ;
-        d.cx = "{:.4f}".format(d.rad_planet*Math.cos(d.az_adj))
-        d.cy = "{:.4f}".format(d.rad_planet*Math.sin(d.az_adj))
+        d.cx = "{:.4f}".format(d.radialPos*Math.cos(d.az_adj))
+        d.cy = "{:.4f}".format(d.radialPos*Math.sin(d.az_adj))
 //        console.log(d.name, d.az, d.alt, d.cx, d.cy);
     });
     updatePlanetPlot()
 }
+
+var setupAbout = function(){
+    var aboutDiv = $("#about") ;
+    var origText = aboutDiv.html();
+    aboutDiv.mouseover(function(){
+        $(this).html("<h3> Hovered! </h3>")
+    }) ;
+
+    aboutDiv.mouseout(function(){
+        $(this).html(origText);
+    }) ;
+
+
+}
+
 
 var setupPlanetPlot = function(){
     // Canvas
@@ -61,8 +83,46 @@ var setupPlanetPlot = function(){
         .style("fill", "none")
         .style("Stroke", "rgba(0,0,0,0.4)");
 
+//    staticGroup.append("ellipse")
+//        .attr('rx', 10)
+//        .attr('ry', 15)
+//        .attr('transform', 'translate(100, 100)')
+//        .attr('transform', 'rotate(45)')
+//        .style("fill", "blue")
+
     dynamicGroup = svg.append("g");
 }
+
+var mouseOverCallback = function(d){
+    div.transition()
+        .duration(200)
+        .style("opacity", .9);
+    divWidth = parseInt(div.style('width'), 10);
+    divHeight = parseInt(div.style('max-height'), 10);
+    divPadding = parseInt(div.style('padding'), 10);
+    divX = parseInt(parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2, 10);
+    divY = parseInt(parseFloat(d.cy) + height/2 - divHeight - d.ry - divPadding, 10);
+//    console.log(divX, divY);
+    div.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg;".format(d.name,toDegree(d.az),toDegree(d.alt)))
+        .style("transform","translate({}px,{}px)".format(divX,divY))
+        .style("background", "rgba(0,0,0,0.2)")
+//    console.log(div.style('left'), div.style('top'))
+    d3.select(this)
+        .transition()
+        .duration(200)
+        .attr('stroke-width', 2)
+}
+
+var mouseOutCallback = function(d){
+    div.transition()
+        .duration(200)
+        .style("opacity", 0);
+    d3.select(this)
+        .transition()
+        .duration(200)
+        .attr('stroke-width', d.strokeWidth)
+}
+
 
 var updatePlanetPlot = function(){
     var divWidth, divHeight, divPadding, divX, divY ;
@@ -74,60 +134,28 @@ var updatePlanetPlot = function(){
         .attr('cx', function(d){return d.cx})
         .attr('cy', function(d){return d.cy})
         .attr('class', function(d){return d.name})
-        .attr('r', function(d){return parseFloat(d.r)})
+        .attr('r', function(d){return parseFloat(d.ry)})
         .attr('stroke', "rgba(0,0,0,0.2)")
-        .attr('stroke-width', 0)
+        .attr('stroke-width', function(d){return d.strokeWidth})
         .style("fill", function(d){return d.planetColor})
-        .style("fill", function(d){return d.planetColor})
-        .on("mouseover", function(d) {
-//          console.log(d3.event.pageX, d3.event.pageY, parseFloat(d.cx) + d.r + width/2,(parseFloat(d.cy) - d.r + height/2))
-            div.transition()
-                .duration(200)
-                .style("opacity", .9);
-            div.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg;".format(d.name,toDegree(d.az),toDegree(d.alt)))
-            divWidth = parseInt(div.style('width'), 10);
-            divHeight = parseInt(div.style('max-height'), 10);
-            divPadding = parseInt(div.style('padding'), 10);
-            divX = parseFloat(d.cx) + width/2 - divWidth/2 - divPadding/2; // + divInitX;
-            divY = parseFloat(d.cy) + height/2 - divHeight - d.r - divPadding; // + divInitY;
-//            Using translate would be nice, but it doens't seem to update.
-            div.style("transform","translate({:.2f}px,{:.2f}px)".format(divX,divY))
-                .style("background", "rgba(0,0,0,0.2)")
-//            console.log(div.style('left'), div.style('top'))
-//          div.style('left',"{}px".format(divX))
-//                .style('top', "{}px".format(divY))
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr('stroke-width', 2)
-         })
-        .on("mouseout", function(d) {
-            div.transition()
-                .duration(200)
-                .style("opacity", 0);
-            d3.select(this)
-                .transition()
-                .duration(200)
-                .attr('stroke-width', 0)
-        })
+        .on("mouseover", mouseOverCallback)
+        .on("mouseout", mouseOutCallback)
+
     circles.merge(circles)
         .attr('cx', function(d){return d.cx})
         .attr('cy', function(d){return d.cy})
         .attr('class', function(d){return d.name})
-        .attr('r', function(d){return parseFloat(d.r)})
+        .attr('r', function(d){return d.ry})
         .attr('stroke', "rgba(0,0,0,0.2)")
-        .attr('stroke-width', 0)
+        .attr('stroke-width', function(d){return d.strokeWidth})
         .style("fill", function(d){return d.planetColor})
-
-
+        .on("mouseover", mouseOverCallback)
+        .on("mouseout", mouseOutCallback)
 }
-//var counter = 0 ;
-planetTimer = setInterval(function(){
-//    counter += 1 ;
-//    console.log(counter)
-    requestPlanetPosition(currentGlobePosition);
-}, 2000);
 
+planetTimer = setInterval(function(){
+    requestPlanetPosition(currentGlobePosition);
+}, updateRate);
 
 var getPosition = function(callback){
     if (navigator.geolocation){
@@ -148,6 +176,7 @@ var getPosition = function(callback){
 
 var requestPlanetPosition = function(currentPosition){
     currentGlobePosition = currentPosition ;
+    currentPosition.continuous = false;
     $.ajax({
 		type:"POST",
 		url: $SCRIPT_ROOT+"/get_planets",
@@ -163,6 +192,7 @@ var requestPlanetPosition = function(currentPosition){
 
 $(document).ready(function(){
     setupPlanetPlot()
+//    setupAbout();
     getPosition(requestPlanetPosition);
 });
 
