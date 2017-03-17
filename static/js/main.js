@@ -11,6 +11,16 @@ var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+var aboutTooltipDiv = d3.select("#about").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("background", "rgba(0,0,0,0.2)")
+    .style("width", "180px")
+    .style("max-height", "200px")
+    .html(`Hover the mouse over objects to see
+           their name and current position in the sky.
+           Objects that are just outlines are below the horizon.`)
+
 var divInitX = parseFloat(div.style('left'));
 var divInitY = parseFloat(div.style('top'));
 // Turn a radian angle into degree
@@ -50,11 +60,17 @@ var setupAbout = function(){
     var aboutDiv = $("#about") ;
     var origText = aboutDiv.html();
     aboutDiv.mouseover(function(){
-        $(this).html("<h3> Hovered! </h3>")
+        aboutTooltipDiv.transition()
+            .duration(200)
+            .style("opacity", .9);
+        $("#about h4").css("color", "#ce0e25")
     }) ;
 
     aboutDiv.mouseout(function(){
-        $(this).html(origText);
+        aboutTooltipDiv.transition()
+            .duration(200)
+            .style("opacity", 0);
+        $("#about h4").css("color", "#222")
     }) ;
 
 
@@ -192,7 +208,7 @@ var requestPlanetPosition = function(currentPosition){
 
 $(document).ready(function(){
     setupPlanetPlot()
-//    setupAbout();
+    setupAbout();
     getPosition(requestPlanetPosition);
 });
 
