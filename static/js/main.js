@@ -22,6 +22,13 @@ var aboutTooltipDiv = d3.select("#about").append("div")
            their name and current position in the sky.
            Objects that are just outlines are below the horizon.`)
 
+var infoDiv = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("background", "rgba(0,0,0,0.2)")
+    .style("width", "180px")
+    .style("max-height", "200px")
+
 var divInitX = parseFloat(div.style('left'));
 var divInitY = parseFloat(div.style('top'));
 
@@ -139,6 +146,7 @@ var setupPlanetPlot = function(){
 
     staticGroup.append('path')
         .attr('d', largeArc)
+        .attr('id', 'horizon')
         .style("fill", "rgba(0,0,0,0.0)")
         .style("stroke", "none")
         .on('mouseover', function(){
@@ -154,6 +162,18 @@ var setupPlanetPlot = function(){
                 .style("stroke", function(d){return d.color.format(0.0)})
         })
 
+    var directions = dynamicGroup.selectAll('text').data([{pos:0,label:'N'},
+                                        {pos:0.25,label:'E'},
+                                        {pos:0.5,label:'S'},
+                                        {pos:0.75,label:'W'}])
+    directions.enter().append("text")
+        .attr('x', function(d){return d.pos * (2.0*(rad+tolerance)*Math.PI)})
+        .append("textPath")
+        .attr("xlink:href", "#horizon") //place the ID of the path here
+        .style("text-anchor","middle") //place the text halfway on the arc
+        .attr("startOffset", "0%")
+        .text(function(d){return d.label});
+
     staticGroup.append('circle')
         .style("stroke", "rgba(0,0,0,0.4")
         .style('fill', 'none')
@@ -162,25 +182,8 @@ var setupPlanetPlot = function(){
 
 var updatePlanetPlot = function(){
 
-//    var pathGroup = dynamicGroup.selectAll('g')
-//    pathGroup.merge(pathGroup)
-//        .style("stroke", function(d){return d.color.format(0.2)})
-//        .style("stroke-width", 1)
-//        .attr("fill", "none")
-//        .attr("d",function(d){return planetDataLineFunction(d.sameDayPos)}) ;
-//    pathGroup.exit().remove() ;
-
     var planetGroup = dynamicGroup.selectAll('g')
     planetGroup.merge(planetGroup)
-//        .attr('cx', function(d){return d.sameDayPos[0].cx})
-//        .attr('cy', function(d){return d.sameDayPos[0].cy})
-//        .attr('class', function(d){return d.name})
-//        .attr('r', function(d){return d.ry})
-//        .attr('stroke', "rgba(0,0,0,0.2)")
-//        .attr('stroke-width', function(d){return d.strokeWidth})
-//        .style("fill", function(d){return d.planetColor})
-//        .on("mouseover", mouseOverCallback)
-//        .on("mouseout", mouseOutCallback) ;
     planetGroup.exit().remove() ;
 }
 
@@ -240,9 +243,14 @@ var getPosition = function(callback){
                 lon: position.coords.longitude,
                 elevation: 0
             }
+            console.log("Geolocation: lat {:.4f} lon {:.4f}".format(pos.lat, pos.lon))
             callback(pos)
         }, function () {
             console.log("Couldn't get geolocation.");
+            infoDiv.transition()
+                .duration(300)
+                .style('opacity',0.9)
+                .html("Couldn't get geolocation")
         });
     } else {
         console.log("Browser doesn't support geolocation");
