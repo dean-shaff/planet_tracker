@@ -28,6 +28,22 @@ planets_info = {
     'moon': {'ephem_obj': ephem.Moon(), 'color': "rgba(0,0,0,{})", 'size': 1.0}
 }
 
+def sign(n):
+    """
+    Get the sign of the argument
+    Args:
+        n:
+
+    Returns:
+
+    """
+    if n > 0:
+        return 1
+    elif n < 0:
+        return -1
+    elif n == 0:
+        return 0
+
 
 
 @app.route("/get_planets", methods=['POST'])
@@ -43,27 +59,58 @@ def get_planets():
     observer.lon = str(current_position['lon'])
     observer.lat = str(current_position['lat'])
     observer.elevation = current_position['elevation']
-
-    continuous = current_position['continuous']
-    if continuous:
-        global startup_time
-        startup_time += datetime.timedelta(minutes=15)
-        observer.date = startup_time
-    else:
-        observer.date = datetime.datetime.utcnow()
-
+    app.logger.debug("Lat: {}, Lon: {}".format(observer.lat, observer.lon))
+    # continuous = current_position['continuous']
+    # if continuous:
+    #     global startup_time
+    #     startup_time += datetime.timedelta(minutes=15)
+    #     observer.date = startup_time
+    # else:
+    #     observer.date = datetime.datetime.utcnow()
+    t0 = time.time()
     planet_list = []
+    utcnow = datetime.datetime.utcnow()
+
+    observer.date = utcnow
+
     for pl_key in planets_info:
+        ti = time.time()
         planet = planets_info[pl_key]
         ephem_obj = planet['ephem_obj']
+        same_day_position = [] # the position of the planet on the same day, throughout the day. (For drawing arcs)
+        same_time_position = [] # the position of the planet at the same time, but at different days
+        time_var = utcnow
+        for i in xrange(14): # a fortnight
+            time_var += datetime.timedelta(days=1)
+            observer.date = time_var
+            ephem_obj.compute(observer)
+            same_time_position.append([ephem_obj.az, ephem_obj.alt])
+
+        time_var = utcnow
+        observer.date = time_var
         ephem_obj.compute(observer)
-        app.logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, ephem_obj.az, ephem_obj.alt,
-                                                                        ephem_obj.ra, ephem_obj.dec))
+        same_day_position.append([ephem_obj.az, ephem_obj.alt])
+        while (True):
+            time_var += datetime.timedelta(minutes=5)
+            observer.date = time_var
+            ephem_obj.compute(observer)
+            if sign(ephem_obj.alt) != sign(same_day_position[-1][1]):
+                break
+            else:
+                same_day_position.append([ephem_obj.az, ephem_obj.alt])
+            # app.logger.debug("Current alt: {}".format(same_day_position[-1][1]))
+
+        # app.logger.debug("Took {:.2f} seconds to compute planet {}".format(time.time() - ti, pl_key))
+        ephem_obj.compute(observer)
+        # app.logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, ephem_obj.az, ephem_obj.alt,
+        #                                                                 ephem_obj.ra, ephem_obj.dec))
         planet_list.append({'color': planet['color'],
                             'name': pl_key.capitalize(),
                             'size':planet['size'],
-                            'az': float(ephem_obj.az),
-                            'alt': float(ephem_obj.alt)})
+                            'sameDayPos': same_day_position,
+                            'sameTimePos': same_time_position})
+
+    app.logger.debug("Took {:.2f} seconds to compute planet positions".format(time.time() - t0))
 
     return jsonify(result=json.dumps(planet_list))
 
