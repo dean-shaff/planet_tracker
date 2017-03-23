@@ -1,12 +1,13 @@
 var planetData ;
 var currentGlobePosition ;
 var planetTimer ;
-var svg, staticGroup, dynamicGroup ;
+var svg, staticGroup, dynamicGroup;
 var height = $(window).height();
 var width = $(window).width();
-var rad = Math.min(width, height) / 2 - 40;
+var rad = (Math.min(width, height) / 2) - 50;
 var updateRate = 2000 ;
-
+var hoverTransition = 300 ;
+var black = "rgba(0,0,0,{})"
 // Define the div for the tooltip
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
@@ -37,37 +38,42 @@ var toDegree = function(radian){
     return (180.*radian)/(Math.PI)
 }
 // Line function to get data from planetData object
-var planetDataLineFunction = d3.line()
+var planetDataLineGenerator = d3.line()
                         .x(function(d){return d.cx})
                         .y(function(d){return d.cy})
+
+//var futurePlanetCircleGenerator = d3.geoCircle()
+//                        .innerRadius(0)
+//                        .outerRadius(function(d){return 4})
 
 
 var setPlanetData = function(msg, callbackFunction){
     planetData = JSON.parse(msg.result) ;
     planetData.forEach(function(d){
-        d.sameDayPos.forEach(function(d){
-            d.az = d[0];
-            d.alt = d[1];
-            d.radialPos = (rad*((Math.PI/2.0)-Math.abs(d.alt)))/(Math.PI/2.0);
-            d.az_adj = d.az - Math.PI/2.0 ;
-            d.cx = "{:.4f}".format(d.radialPos*Math.cos(d.az_adj))
-            d.cy = "{:.4f}".format(d.radialPos*Math.sin(d.az_adj))
+        d.r = d.size * parseInt((rad)/ 25., 10);
+        d.sameDayPos.forEach(function(di){
+            di.az = di[0];
+            di.alt = di[1];
+            di.radialPos = (rad*((Math.PI/2.0)-Math.abs(di.alt)))/(Math.PI/2.0);
+            di.az_adj = di.az - Math.PI/2.0 ;
+            di.cx = "{:.4f}".format(di.radialPos*Math.cos(di.az_adj))
+            di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
         })
-        d.sameTimePos.forEach(function(d){
-            d.az = d[0];
-            d.alt = d[1];
-            d.radialPos = (rad*((Math.PI/2.0)-Math.abs(d.alt)))/(Math.PI/2.0);
-            d.az_adj = d.az - Math.PI/2.0 ;
-            d.cx = "{:.4f}".format(d.radialPos*Math.cos(d.az_adj))
-            d.cy = "{:.4f}".format(d.radialPos*Math.sin(d.az_adj))
+        d.sameTimePos.forEach(function(di){
+            di.az = di[0];
+            di.alt = di[1];
+            di.radialPos = (rad*((Math.PI/2.0)-Math.abs(di.alt)))/(Math.PI/2.0);
+            di.az_adj = di.az - Math.PI/2.0 ;
+            di.cx = "{:.4f}".format(di.radialPos*Math.cos(di.az_adj))
+            di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
+            di.r = d.r
         })
-        d.ry = d.size * parseInt((rad)/ 25., 10);
-        d.rx = (d.ry) * ((rad-d.radialPos) / rad);
-//        console.log(d.name, d.ry, d.rx, d.radialPos, rad)
+
+//        console.log(d.name, d.r, d.rx, d.radialPos, rad)
         var planetColor ;
         var strokeWidth
 //        console.log(d.color.format(1.0));
-        if (d.sameDayPos[1].alt >= 0){
+        if (d.sameDayPos[0].alt >= 0){
             planetColor = d.color.format(0.8);
             strokeWidth = 0 ;
         }else{
@@ -114,8 +120,6 @@ var setupPlanetPlot = function(){
       .attr("r",2)
       .style("fill", "rgba(0,0,0,0.4)");
 
-    // Directions, NWSE not implemented yet
-
     var planetGroup = dynamicGroup.selectAll('g')
         .data(planetData)
 
@@ -123,7 +127,7 @@ var setupPlanetPlot = function(){
         .attr('cx', function(d){return d.sameDayPos[0].cx})
         .attr('cy', function(d){return d.sameDayPos[0].cy})
         .attr('class', function(d){return d.name})
-        .attr('r', function(d){return parseFloat(d.ry)})
+        .attr('r', function(d){return parseFloat(d.r)})
         .attr('stroke', "rgba(0,0,0,0.2)")
         .attr('stroke-width', function(d){return d.strokeWidth})
         .style("fill", function(d){return d.planetColor})
@@ -131,10 +135,21 @@ var setupPlanetPlot = function(){
         .on("mouseout", mouseOutCallback)
 
     planetGroup.enter().append("path")
-        .style("stroke", function(d){return d.color.format(0.0)})
+        .style("stroke", black.format(0.2))
         .style("stroke-width", 2)
         .attr("fill", "none")
-        .attr("d",function(d){return planetDataLineFunction(d.sameDayPos)})
+        .attr("d",function(d){return planetDataLineGenerator(d.sameDayPos)})
+
+    planetData.forEach(function(d, i){
+        grpi = dynamicGroup.append('g')
+            .attr('id', "future{}".format(i))
+        grpi.selectAll('circle').data(d.sameTimePos)
+            .enter().append('circle')
+            .attr('cx', function(di){return di.cx})
+            .attr('cy', function(di){return di.cy})
+            .attr('r', function(di){return 0.2*di.r})
+            .style("fill", black.format(0.0))
+    })
 
     // Horizon
     var tolerance = 8
@@ -152,16 +167,17 @@ var setupPlanetPlot = function(){
         .on('mouseover', function(){
             dynamicGroup.selectAll('path')
                 .transition()
-                .duration(300)
-                .style("stroke", function(d){return d.color.format(0.3)})
+                .duration(hoverTransition)
+                .style("stroke", function(d){return black.format(0.2)})
         })
         .on('mouseout', function(){
             dynamicGroup.selectAll('path')
                 .transition()
-                .duration(300)
-                .style("stroke", function(d){return d.color.format(0.0)})
+                .duration(hoverTransition)
+                .style("stroke", function(d){return black.format(0.0)})
         })
 
+    // Add directions
     var directions = dynamicGroup.selectAll('text').data([{pos:0,label:'N'},
                                         {pos:0.25,label:'E'},
                                         {pos:0.5,label:'S'},
@@ -174,6 +190,7 @@ var setupPlanetPlot = function(){
         .attr("startOffset", "0%")
         .text(function(d){return d.label});
 
+    // now put the visible circle
     staticGroup.append('circle')
         .style("stroke", "rgba(0,0,0,0.4")
         .style('fill', 'none')
@@ -181,7 +198,6 @@ var setupPlanetPlot = function(){
 }
 
 var updatePlanetPlot = function(){
-
     var planetGroup = dynamicGroup.selectAll('g')
     planetGroup.merge(planetGroup)
     planetGroup.exit().remove() ;
@@ -195,7 +211,7 @@ var mouseOverCallback = function(d, i){
     var divHeight = parseInt(div.style('max-height'), 10);
     var divPadding = parseInt(div.style('padding'), 10);
     var divX = parseInt(parseFloat(d.sameDayPos[0].cx) + width/2 - divWidth/2 - divPadding/2, 10);
-    var divY = parseInt(parseFloat(d.sameDayPos[0].cy) + height/2 - divHeight - d.ry - divPadding, 10);
+    var divY = parseInt(parseFloat(d.sameDayPos[0].cy) + height/2 - divHeight - d.r - divPadding, 10);
 //    console.log(divX, divY);
     div.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg;".format(d.name,toDegree(d.sameDayPos[0].az),toDegree(d.sameDayPos[0].alt)))
         .style("transform","translate({}px,{}px)".format(divX,divY))
@@ -203,33 +219,49 @@ var mouseOverCallback = function(d, i){
 //    console.log(div.style('left'), div.style('top'))
     d3.select(this)
         .transition()
-        .duration(300)
+        .duration(hoverTransition)
+//        .style('fill', black.format(0.2))
         .attr('stroke-width', 2)
 
     d3.select(this.parentNode).selectAll('path')
         .transition()
-        .duration(300)
+        .duration(hoverTransition)
         .style("stroke", function(di, ind){
                             if (ind == i){
-                                return di.color.format(0.3)
+                                return black.format(0.2)
                             } else
-                                return di.color.format(0.0)})
+                                return black.format(0.0)
+         })
 
+    var futurePlanetGroup = document.querySelector('#future{}'.format(i));
+    var circleNodes = futurePlanetGroup.getElementsByTagName('circle');
+    d3.selectAll(circleNodes)
+        .transition()
+        .duration(hoverTransition)
+        .style('fill', black.format(0.2))
 }
 
-var mouseOutCallback = function(d){
+var mouseOutCallback = function(d, i){
     div.transition()
-        .duration(200)
+        .duration(hoverTransition)
         .style("opacity", 0);
     d3.select(this)
         .transition()
-        .duration(200)
-        .attr('stroke-width', d.strokeWidth)
+        .duration(hoverTransition)
+//        .style('fill', d.planetColor)
+        .attr('stroke-width', d.strokeWidth);
     d3.select(this.parentNode).selectAll('path')
         .transition()
-        .duration(300)
-        .style("stroke", function(di, ind){return di.color.format(0.0)})
+        .duration(hoverTransition)
+        .style("stroke", function(di, ind){return black.format(0.0)});
+    var futurePlanetGroup = document.querySelector('#future{}'.format(i));
+    var circleNodes = futurePlanetGroup.getElementsByTagName('circle');
+    d3.selectAll(circleNodes)
+        .transition()
+        .duration(hoverTransition)
+        .style('fill', black.format(0.0))
 }
+
 
 planetTimer = setInterval(function(){
     requestPlanetPosition(currentGlobePosition, updatePlanetPlot);
@@ -246,11 +278,11 @@ var getPosition = function(callback){
             console.log("Geolocation: lat {:.4f} lon {:.4f}".format(pos.lat, pos.lon))
             callback(pos)
         }, function () {
-            console.log("Couldn't get geolocation.");
-            infoDiv.transition()
-                .duration(300)
-                .style('opacity',0.9)
-                .html("Couldn't get geolocation")
+            console.log("Couldn't get geolocation. Defaulting to NYUAD");
+            var pos = {lat:24.523920,
+                       lon:54.432948,
+                       elevation: 0}
+            callback(pos)
         });
     } else {
         console.log("Browser doesn't support geolocation");
