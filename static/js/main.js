@@ -24,7 +24,11 @@ var aboutTooltipDiv = d3.select("#about").append("div")
     .style("max-height", "200px")
     .html(`Hover the mouse over objects to see
            their name and current position in the sky.
-           Objects that are just outlines are below the horizon.`)
+           Hovering will also show the path of the planet until it reaches the horizon
+           and its position at the same time for the next fortnight.
+           Objects that are just outlines are below the horizon.
+           Hover the mouse over the horizon to see a polar plot,
+           in addition to all the paths of the planets.`)
     .style('transform', 'translate({}px,{}px)'.format(-50,0))
 
 console.log(d3.select('#about').style('margin-left'))
