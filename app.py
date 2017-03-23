@@ -45,7 +45,6 @@ def sign(n):
         return 0
 
 
-
 @app.route("/get_planets", methods=['POST'])
 def get_planets():
     """
@@ -60,18 +59,18 @@ def get_planets():
     observer.lat = str(current_position['lat'])
     observer.elevation = current_position['elevation']
     app.logger.debug("Lat: {}, Lon: {}".format(observer.lat, observer.lon))
-    # continuous = current_position['continuous']
-    # if continuous:
-    #     global startup_time
-    #     startup_time += datetime.timedelta(minutes=15)
-    #     observer.date = startup_time
-    # else:
-    #     observer.date = datetime.datetime.utcnow()
+    continuous = current_position['continuous']
+    if continuous:
+        global startup_time
+        startup_time += datetime.timedelta(minutes=15)
+        utcnow = startup_time
+        observer.date = utcnow
+    else:
+        utcnow = datetime.datetime.utcnow()
+        observer.date = utcnow
+
     t0 = time.time()
     planet_list = []
-    utcnow = datetime.datetime.utcnow()
-
-    observer.date = utcnow
 
     for pl_key in planets_info:
         ti = time.time()
