@@ -10,8 +10,6 @@
 	<!-- Styling -->
 	<link type="text/css" href="{{ url_for('static',filename='css/skeleton.css')}}" rel="stylesheet">
 	<link type="text/css" href="{{ url_for('static',filename='css/styles.css')}}" rel="stylesheet">
-    <!--<link type="text/css" href="./../static/css/skeleton.css" rel="stylesheet">-->
-    <!--<link type="text/css" href="./../static/css/styles.css" rel="stylesheet">-->
 
 	<script type=text/javascript>
 	  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -21,8 +19,11 @@
 <body>
 	<div class='container'>
 		<div class='row'>
-			<div class='ten columns' id="about">
+			<div class='three columns' id="title">
 				<h4>Planet Tracker</h4>
+			</div>
+            <div class='seven columns' id="about">
+				<h4>About</h4>
 			</div>
             <div class="two columns">
                 <h4><a class="no-format" href="https://github.com/dean-shaff/planet_tracker">Source</a></h4>
@@ -37,9 +38,7 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="{{ url_for('static', filename='js/format.js')}}"></script>
+    <script src="{{ url_for('static', filename='js/polarPlotD3.js')}}"></script>
 	<script src="{{ url_for('static', filename='js/main.js')}}"></script>
-
-    <!--<script src="./../static/js/format.js"></script>-->
-    <!--<script src="./../static/js/main.js"></script>-->
 
 </body>

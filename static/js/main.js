@@ -1,34 +1,34 @@
 var planetData ;
 var currentGlobePosition ;
 var planetTimer ;
-var svg, staticGroup, dynamicGroup;
+var svg, staticGroup, dynamicGroup, polarPlot, polarPlotGroup;
 var height = $(window).height();
 var width = $(window).width();
 var rad = (Math.min(width, height) / 2) - 50;
 var updateRate = 2000 ;
 var hoverTransition = 300 ;
 var black = "rgba(0,0,0,{})"
-// Define the div for the tooltip
+
+
+// Define the div for the planet information tooltip
 var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+// Define the div for the About tooltip
 var aboutTooltipDiv = d3.select("#about").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
     .style("background", "rgba(0,0,0,0.2)")
-    .style("width", "180px")
+    .style("width", "200px")
     .style("max-height", "200px")
     .html(`Hover the mouse over objects to see
            their name and current position in the sky.
            Objects that are just outlines are below the horizon.`)
+    .style('transform', 'translate({}px,{}px)'.format(-50,0))
 
-var infoDiv = d3.select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0)
-    .style("background", "rgba(0,0,0,0.2)")
-    .style("width", "180px")
-    .style("max-height", "200px")
+console.log(d3.select('#about').style('margin-left'))
+
 
 var divInitX = parseFloat(div.style('left'));
 var divInitY = parseFloat(div.style('top'));
@@ -41,11 +41,6 @@ var toDegree = function(radian){
 var planetDataLineGenerator = d3.line()
                         .x(function(d){return d.cx})
                         .y(function(d){return d.cy})
-
-//var futurePlanetCircleGenerator = d3.geoCircle()
-//                        .innerRadius(0)
-//                        .outerRadius(function(d){return 4})
-
 
 var setPlanetData = function(msg, callbackFunction){
     planetData = JSON.parse(msg.result) ;
@@ -89,6 +84,7 @@ var setPlanetData = function(msg, callbackFunction){
 var setupAbout = function(){
     var aboutDiv = $("#about") ;
     var origText = aboutDiv.html();
+    about
     aboutDiv.mouseover(function(){
         aboutTooltipDiv.transition()
             .duration(200)
@@ -104,6 +100,7 @@ var setupAbout = function(){
     }) ;
 }
 
+
 var setupPlanetPlot = function(){
     // Canvas
     svg = d3.select('body').append("svg")
@@ -114,6 +111,13 @@ var setupPlanetPlot = function(){
 
     staticGroup = svg.append("g");
     dynamicGroup = svg.append("g");
+    polarPlotGroup = svg.append("g")
+    var r = d3.scaleLinear()
+        .domain([90, 0])
+        .range([0, rad]);
+    polarPlot = new PolarPlotD3(polarPlotGroup, r, rad, {ticks:5,
+                                                        angularLines:true,
+                                                        radialLabels:true});
     // Center
     staticGroup.append("circle")
       .attr("class", "center")
@@ -169,32 +173,34 @@ var setupPlanetPlot = function(){
                 .transition()
                 .duration(hoverTransition)
                 .style("stroke", function(d){return black.format(0.2)})
+            polarPlot.show(hoverTransition);
         })
         .on('mouseout', function(){
             dynamicGroup.selectAll('path')
                 .transition()
                 .duration(hoverTransition)
                 .style("stroke", function(d){return black.format(0.0)})
+            polarPlot.hide(hoverTransition);
         })
-
-    // Add directions
-    var directions = dynamicGroup.selectAll('text').data([{pos:0,label:'N'},
-                                        {pos:0.25,label:'E'},
-                                        {pos:0.5,label:'S'},
-                                        {pos:0.75,label:'W'}])
-    directions.enter().append("text")
-        .attr('x', function(d){return d.pos * (2.0*(rad+tolerance)*Math.PI)})
-        .append("textPath")
-        .attr("xlink:href", "#horizon") //place the ID of the path here
-        .style("text-anchor","middle") //place the text halfway on the arc
-        .attr("startOffset", "0%")
-        .text(function(d){return d.label});
-
     // now put the visible circle
     staticGroup.append('circle')
         .style("stroke", "rgba(0,0,0,0.4")
         .style('fill', 'none')
         .attr('r', rad)
+    // Add directions
+//    var directions = dynamicGroup.selectAll('text').data([{pos:0,label:'N'},
+//                                        {pos:0.25,label:'E'},
+//                                        {pos:0.5,label:'S'},
+//                                        {pos:0.75,label:'W'}])
+//    directions.enter().append("text")
+//        .attr('x', function(d){return d.pos * (2.0*(rad+tolerance)*Math.PI)})
+//        .append("textPath")
+//        .attr("xlink:href", "#horizon") //place the ID of the path here
+//        .style("text-anchor","middle") //place the text halfway on the arc
+//        .attr("startOffset", "0%")
+//        .text(function(d){return d.label});
+
+
 }
 
 var updatePlanetPlot = function(){
