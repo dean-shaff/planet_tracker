@@ -25,7 +25,7 @@ planets_info = {
     'uranus': {'ephem_obj':ephem.Uranus(),'color': "rgba(195,233,236,{})", 'size': 1.0},
     'neptune': {'ephem_obj':ephem.Neptune(),'color': "rgba(71,114,255,{})", 'size': 1.0},
     'sun': {'ephem_obj': ephem.Sun(), 'color': "rgba(255,204,0,{})", 'size': 2.0},
-    'moon': {'ephem_obj': ephem.Moon(), 'color': "rgba(0,0,0,{})", 'size': 1.0}
+    'moon': {'ephem_obj': ephem.Moon(), 'color': "rgba(128,128,128,{})", 'size': 1.0}
 }
 
 def sign(n):

@@ -5,7 +5,7 @@ var svg, staticGroup, dynamicGroup, polarPlot, polarPlotGroup;
 var height = $(window).height();
 var width = $(window).width();
 var rad = (Math.min(width, height) / 2) - 50;
-var updateRate = 2000 ;
+var updateRate = 4000 ;
 var hoverTransition = 300 ;
 var black = "rgba(0,0,0,{})"
 
@@ -123,6 +123,7 @@ var setupPlanetPlot = function(){
     polarPlot = new PolarPlotD3(polarPlotGroup, r, rad, {ticks:5,
                                                         angularLines:true,
                                                         radialLabels:true});
+    polarPlot.show();
     // Center
     staticGroup.append("circle")
       .attr("class", "center")
@@ -164,7 +165,7 @@ var setupPlanetPlot = function(){
     })
 
     // Horizon
-    var tolerance = 8
+    var tolerance = 15
     var largeArc = d3.arc()
         .innerRadius(rad - tolerance)
         .outerRadius(rad + tolerance)
@@ -181,14 +182,14 @@ var setupPlanetPlot = function(){
                 .transition()
                 .duration(hoverTransition)
                 .style("stroke", function(d){return black.format(0.2)})
-            polarPlot.show(hoverTransition);
+//            polarPlot.show(hoverTransition);
         })
         .on('mouseout', function(){
             dynamicGroup.selectAll('path')
                 .transition()
                 .duration(hoverTransition)
                 .style("stroke", function(d){return black.format(0.0)})
-            polarPlot.hide(hoverTransition);
+//            polarPlot.hide(hoverTransition);
         })
     // now put the visible circle
     staticGroup.append('circle')

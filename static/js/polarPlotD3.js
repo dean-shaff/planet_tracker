@@ -21,7 +21,7 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
                 .attr("y", function(d) { return - rFunction(d) - 4; })
                 .attr("transform", "rotate(15)")
                 .style("text-anchor", "middle")
-                .text(function(d) { return d; });
+                .text(function(d) { return d+ "°"; });
         }
 
         var polarPlotAngular = extendGroup.append("g")
