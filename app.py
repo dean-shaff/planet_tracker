@@ -105,7 +105,7 @@ def get_planets():
         #                                                                 ephem_obj.ra, ephem_obj.dec))
         planet_list.append({'color': planet['color'],
                             'name': pl_key.capitalize(),
-                            'size':planet['size'],
+                            'size': planet['size'],
                             'sameDayPos': same_day_position,
                             'sameTimePos': same_time_position})
 
@@ -124,5 +124,5 @@ if __name__ == '__main__':
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
     app.logger.addHandler(sh)
-
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5001)
+    # app.run(debug=True, host='0.0.0.0', port=5000)

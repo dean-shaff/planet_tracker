@@ -39,8 +39,25 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
         polarPlotAngular.append("text")
             .attr("x", radius + 6)
             .attr("dy", ".35em")
-            .style("text-anchor", function(d) { return d < 360 && d > 180 ? "end" : null; })
-            .attr("transform", function(d) { return d < 360 && d > 180 ? "rotate(180 {},0)".format(radius+6) : null; })
+            .style("text-anchor", function(d) {
+                if (d < 360 && d > 180){
+                    return "end" ;
+                }else{
+                    return null ;
+                }
+            })
+            .attr("transform", function(d){
+                if (d < 360 && d > 180){
+                    return "rotate(180 {}, 0)".format(radius + 6) ;
+                }
+//                else if (d == 0) {
+//                    return "rotate(90 {}, 0)".format(radius + 6) ;
+//                }
+                else {
+                    return null ;
+                }
+            })
+//            .attr("transform", function(d) { return d < 360 && d > 180 ? "rotate(180 {},0)".format(radius+6) : null; })
             .text(function(d) { return d + "°"; });
 
         this.polarPlotAngular = polarPlotAngular ;

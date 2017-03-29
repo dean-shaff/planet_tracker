@@ -1,12 +1,16 @@
 var planetData ;
-var currentGlobePosition ;
+var globePosition = {lat:24.523920,
+                     lon:54.432948,
+                     elevation: 0,
+                     continuous: false} // NYUAD;
 var planetTimer ;
 var svg, staticGroup, dynamicGroup, polarPlot, polarPlotGroup;
 var height = $(window).height();
 var width = $(window).width();
 var rad = (Math.min(width, height) / 2) - 50;
-var updateRate = 4000 ;
+var updateRate = 1500 ;
 var hoverTransition = 300 ;
+var planetHovering = false ;
 var black = "rgba(0,0,0,{})"
 
 // Define the div for the planet information tooltip
@@ -14,21 +18,26 @@ var div = d3.select("body").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0);
 
+var aboutHTML = `
+<h6>Hover the mouse over objects to see
+their name and current position in the sky. <br>
+Hovering will also show the path of the planet until it reaches the horizon. <br>
+Objects that are just outlines are below the horizon. <br>
+Hover the mouse over the horizon see the paths of all the planets.</h6>
+`
+
 // Define the div for the About tooltip
-var aboutTooltipDiv = d3.select("#about").append("div")
+var aboutTooltipDiv = d3.select("#title-bar").append("div")
     .attr("class", "tooltip")
     .style("opacity", 0)
-    .style("background", "rgba(0,0,0,0.2)")
-    .style("width", "200px")
-    .style("max-height", "200px")
-    .html(`Hover the mouse over objects to see
-           their name and current position in the sky.
-           Hovering will also show the path of the planet until it reaches the horizon
-           and its position at the same time for the next fortnight.
-           Objects that are just outlines are below the horizon.
-           Hover the mouse over the horizon to see a polar plot,
-           in addition to all the paths of the planets.`)
-    .style('transform', 'translate({}px,{}px)'.format(-50,0))
+//    .style("background", "rgba(200,200,200,1.0)")
+    .style("background","rgba(255,255,255,1.0)")
+    .style("width", d3.select("#planet-plot").style('width'))
+    .style("max-height", "500px")
+    .html(aboutHTML)
+    .style('transform', 'translate({}px,{})'.format(0,d3.select("#title").style('height')))
+
+//console.log(d3.select("#title").style('height'));
 
 var divInitX = parseFloat(div.style('left'));
 var divInitY = parseFloat(div.style('top'));
@@ -178,6 +187,7 @@ var setupPlanetPlot = function(){
         .style("fill", "rgba(0,0,0,0.0)")
         .style("stroke", "none")
         .on('mouseover', function(){
+            planetHovering = true ;
             dynamicGroup.selectAll('path')
                 .transition()
                 .duration(hoverTransition)
@@ -185,6 +195,7 @@ var setupPlanetPlot = function(){
 //            polarPlot.show(hoverTransition);
         })
         .on('mouseout', function(){
+            planetHovering = false ;
             dynamicGroup.selectAll('path')
                 .transition()
                 .duration(hoverTransition)
@@ -206,25 +217,26 @@ var updatePlanetPlot = function(){
     var pathGroup = dynamicGroup.selectAll('path')
         .data(planetData)
 
-    planetGroup.exit().remove();
-    planetGroup.merge(planetGroup)
-        .attr('cx', function(d){return d.sameDayPos[0].cx})
-        .attr('cy', function(d){return d.sameDayPos[0].cy})
-        .attr('class', function(d){return d.name})
-        .attr('r', function(d){return parseFloat(d.r)})
-        .attr('stroke', "rgba(0,0,0,0.2)")
-        .attr('stroke-width', function(d){return d.strokeWidth})
-        .style("fill", function(d){return d.planetColor})
-        .on("mouseover", mouseOverCallback)
-        .on("mouseout", mouseOutCallback)
+    if (! planetHovering) {
+        planetGroup.exit().remove();
+        planetGroup.merge(planetGroup)
+            .attr('cx', function(d){return d.sameDayPos[0].cx})
+            .attr('cy', function(d){return d.sameDayPos[0].cy})
+            .attr('class', function(d){return d.name})
+            .attr('r', function(d){return parseFloat(d.r)})
+            .attr('stroke', "rgba(0,0,0,0.2)")
+            .attr('stroke-width', function(d){return d.strokeWidth})
+            .style("fill", function(d){return d.planetColor})
+            .on("mouseover", mouseOverCallback)
+            .on("mouseout", mouseOutCallback)
 
-    pathGroup.exit().remove();
-    pathGroup.merge(pathGroup)
-        .style("stroke", black.format(0.0))
-        .style("stroke-width", 2)
-        .attr("fill", "none")
-        .attr("d",function(d){return planetDataLineGenerator(d.sameDayPos)})
-
+        pathGroup.exit().remove();
+        pathGroup.merge(pathGroup)
+            .style("stroke", black.format(0.0))
+            .style("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("d",function(d){return planetDataLineGenerator(d.sameDayPos)})
+    }
 //    planetData.forEach(function(d, i){
 //        var futurePlanetGroup = document.querySelector('#future{}'.format(i));
 //        var circleNodes = futurePlanetGroup.getElementsByTagName('circle');
@@ -238,16 +250,19 @@ var updatePlanetPlot = function(){
 }
 
 var mouseOverCallback = function(d, i){
+    planetHovering = true ;
     div.transition()
         .duration(200)
         .style("opacity", .9);
     var divWidth = parseInt(div.style('width'), 10);
     var divHeight = parseInt(div.style('max-height'), 10);
-    var divPadding = parseInt(div.style('padding'), 10);
-    var divX = parseInt(parseFloat(d.sameDayPos[0].cx) + width/2 - divWidth/2 - divPadding/2, 10);
-    var divY = parseInt(parseFloat(d.sameDayPos[0].cy) + height/2 - divHeight - d.r - divPadding, 10);
+//    var divPadding = parseInt(div.style('padding'), 10);
+    var divPadding = 5 ;
+    var divX = parseFloat(parseFloat(d.sameDayPos[0].cx) + width/2 - divWidth/2 - divPadding/2, 10);
+    var divY = parseFloat(parseFloat(d.sameDayPos[0].cy) + height/2 - divHeight - d.r - divPadding, 10);
+//    console.log(parseFloat(d.sameDayPos[0].cy),  height/2, divHeight, d.r, divPadding) ;
 //    console.log(planetData[0].sameDayPos[0]);
-//    console.log(divX, divY);
+    console.log(divX, divY);
 //    console.log(d.sameDayPos[0]);
     div.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg;".format(d.name,toDegree(d.sameDayPos[0].az),toDegree(d.sameDayPos[0].alt)))
         .style("transform","translate({}px,{}px)".format(divX,divY))
@@ -278,6 +293,7 @@ var mouseOverCallback = function(d, i){
 }
 
 var mouseOutCallback = function(d, i){
+    planetHovering = false ;
     div.transition()
         .duration(hoverTransition)
         .style("opacity", 0);
@@ -299,50 +315,50 @@ var mouseOutCallback = function(d, i){
         .style('fill', black.format(0.0))
 }
 
-
-planetTimer = setInterval(function(){
-    requestPlanetPosition(currentGlobePosition, updatePlanetPlot);
-}, updateRate);
-
-var getPosition = function(callback){
+var getPosition = function(successCallBack, errorCallBack){
+    console.log("getPosition: Called.");
     if (navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(function(position){
-            var pos = {
-                lat: position.coords.latitude,
-                lon: position.coords.longitude,
-                elevation: 0
-            }
-            console.log("Geolocation: lat {:.4f} lon {:.4f}".format(pos.lat, pos.lon))
-            callback(pos)
-        }, function () {
-            console.log("Couldn't get geolocation. Defaulting to NYUAD");
-            var pos = {lat:24.523920,
-                       lon:54.432948,
-                       elevation: 0}
-            callback(pos)
-        });
+        navigator.geolocation.getCurrentPosition(successCallBack, errorCallBack);
     } else {
-        console.log("Browser doesn't support geolocation");
+        console.log("Browser doens't support geolocation")
     }
 }
 
-var setGlobalPosition = function(currentPosition){
-    currentGlobePosition = currentPosition
-    requestPlanetPosition(currentGlobePosition, setupPlanetPlot)
+var setGlobalPosition = function(position){
+    console.log("setGlobalPosition: Called.");
+    var pos = {
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+        elevation: 0,
+        continuous: false
+    }
+    globePosition = pos ;
+    requestPlanetPosition(pos, setupPlanetPlot) ;
 }
 
-var requestPlanetPosition = function(currentPosition, callback){
-//    console.log("requestPlanetPosition: Called.")
-    if (typeof currentPosition == 'undefined'){
-        currentPosition = {lat:24.523920,
-                           lon:54.432948,
-                           elevation: 0} // NYUAD
+var positionErrorHandler = function(error){
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            console.log("User denied the request for Geolocation.") ;
+            break;
+        case error.POSITION_UNAVAILABLE:
+            console.log("Location information is unavailable.") ;
+            break;
+        case error.TIMEOUT:
+            console.log("The request to get user location timed out.") ;
+            break;
+        case error.UNKNOWN_ERROR:
+            console.log("An unknown error occurred.")
+            break;
     }
-    currentPosition.continuous = false;
+
+}
+
+var requestPlanetPosition = function(positionObject, callback){
     $.ajax({
 		type:"POST",
 		url: $SCRIPT_ROOT+"/get_planets",
-		data : JSON.stringify(currentPosition),
+		data : JSON.stringify(positionObject),
 		success: function(msg){
 			setPlanetData(msg, callback)
 		},
@@ -352,7 +368,11 @@ var requestPlanetPosition = function(currentPosition, callback){
 	});
 }
 
+planetTimer = setInterval(function(){
+    requestPlanetPosition(globePosition, updatePlanetPlot);
+}, updateRate);
+
 $(document).ready(function(){
     setupAbout();
-    getPosition(setGlobalPosition);
+    getPosition(setGlobalPosition, positionErrorHandler);
 });
