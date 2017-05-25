@@ -23,23 +23,24 @@ var util = {
 }
 
 
-function App(updateRate){
+function App(updateRate, logLevel){
 
     this.updateRate = updateRate ;
     this.height = $(window).height();
     this.width = $(window).width();
     this.rad = (Math.min(this.width, this.height) / 2) - 50;
     this.pos = {};
+    this.logger = new Logger("App", logLevel);
 
     this.init = function() {
         var self = this;
-        console.log("init: Called")
+        this.logger.debug("init: Called");
         this.getPosition([this.setPosition(self), this.makeInitRequest(self)]) ;
         this.timer = setInterval(this.update(self), this.updateRate);
     };
 
     this.getPosition = function(callbacks){
-        console.log("getPosition: Called.")
+        this.logger.debug("getPosition: Called.")
         if (navigator.geolocation){
             navigator.geolocation.getCurrentPosition(
                 function(position){
@@ -70,7 +71,7 @@ function App(updateRate){
                     }
                 });
         } else {
-            console.log("Browser doesn't support geolocation");
+            this.logger.error("Browser doesn't support geolocation");
         } ;
     };
 
@@ -78,13 +79,13 @@ function App(updateRate){
     this.setPosition = function(self){
         return function(pos){
             self.pos = pos ;
-            console.log("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
+            self.logger.debug("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
         };
     }
 
     this.makeInitRequest = function(self){
         return function(pos){
-            console.log("makeInitRequest: Called.")
+            self.logger.debug("makeInitRequest: Called.")
             util.requestData("/get_planets", pos, [self.setup(self)]);
         };
     };
@@ -114,12 +115,12 @@ function App(updateRate){
             self.polarPlot.show();
 
             self.planetTracker = new PlanetTracker(self.pos, data, self.dynamicGroup,
-                                                        self.rad, self.width, self.height);
+                                                        self.rad, self.width, self.height, self.logger.level);
             self.planetTracker.setup() ;
         };
     }
 
 }
 
-app = new App(1000) ;
+app = new App(1000, "DEBUG") ;
 app.init()

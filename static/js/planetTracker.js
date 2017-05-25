@@ -1,5 +1,5 @@
-function PlanetTracker(pos, dataInit, bindElement, rad, width, height) {
-
+function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel) {
+    this.logger = new Logger("PlanetTracker", logLevel);
     this.pos = pos ;
     this.planetData = dataInit;
     this.bindElement = bindElement ;
@@ -9,7 +9,7 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height) {
                             // .attr('transform', 'translate({}, {})'.format(width, height))
     this.toolTipInitX = parseFloat(this.toolTipDiv.style('left'));
     this.toolTipInitY = parseFloat(this.toolTipDiv.style('top'));
-    console.log("Initial tool tip position: {}, {}".format(this.toolTipInitX, this.toolTipInitY));
+    this.logger.info("Initial tool tip position: {}, {}".format(this.toolTipInitX, this.toolTipInitY));
     this.rad = rad ;
     this.width = width ;
     this.height = height ;
@@ -24,8 +24,8 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height) {
 
     this.createPlanetCircles = function(){
         var self = this;
-        console.log("PlanetTracker.createPlanetCircles: Called.")
-        console.log("PlanetTracker.createPlanetCircles: First element of this.planetData: {}, ({}, {})".format(
+        this.logger.debug("PlanetTracker.createPlanetCircles: Called.")
+        this.logger.debug("PlanetTracker.createPlanetCircles: First element of this.planetData: {}, ({}, {})".format(
             this.planetData[0].name,
             this.planetData[0].sameDayPos[0].cx,
             this.planetData[0].sameDayPos[0].cy
@@ -50,7 +50,7 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height) {
                         .x(function(d){return d.cx})
                         .y(function(d){return d.cy}) ;
 
-        console.log("createPlanetSameDayPaths: Called.")
+        this.logger.debug("createPlanetSameDayPaths: Called.")
         var pathGroup = bindElement.selectAll('path').data(this.planetData) ;
         pathGroup.enter().append("path")
             .style("stroke", this.black.format(0.0))
@@ -82,7 +82,7 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height) {
     // Callbacks
     this.updatePlanetCircles = function(self){
         return function(){
-    //        console.log("PlanetTracker.updatePlanetCircles: Called. this.planetData: {}".format(that.planetData[0].sameDayPos[0].cx))
+    //        this.logger.debug("PlanetTracker.updatePlanetCircles: Called. this.planetData: {}".format(that.planetData[0].sameDayPos[0].cx))
             var circleGroup = self.bindElement.selectAll('circle').data(self.planetData) ;
             circleGroup.exit().remove();
             circleGroup.merge(circleGroup)
@@ -95,7 +95,7 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height) {
                 .style("fill", function(d){return d.planetColor})
                 .on("mouseover", self.mouseOverCallback(self))
                 .on("mouseout", self.mouseOutCallback(self));
-    //        console.log(circleGroup);
+    //        this.logger.debug(circleGroup);
         }
     }
 
