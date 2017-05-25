@@ -90,7 +90,8 @@ def get_planets():
         ephem_obj.compute(observer)
         same_day_position.append([ephem_obj.az, ephem_obj.alt])
         while (True):
-            time_var += datetime.timedelta(minutes=5)
+        # for i in xrange(1344): # roughly two weeks
+            time_var += datetime.timedelta(minutes=15)
             observer.date = time_var
             ephem_obj.compute(observer)
             if sign(ephem_obj.alt) != sign(same_day_position[-1][1]):

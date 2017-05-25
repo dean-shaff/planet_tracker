@@ -8,7 +8,7 @@ var svg, staticGroup, dynamicGroup, polarPlot, polarPlotGroup;
 var height = $(window).height();
 var width = $(window).width();
 var rad = (Math.min(width, height) / 2) - 50;
-var updateRate = 1500 ;
+var updateRate = 3000 ;
 var hoverTransition = 300 ;
 var planetHovering = false ;
 var black = "rgba(0,0,0,{})"
@@ -236,16 +236,19 @@ var updatePlanetPlot = function(){
             .style("stroke-width", 2)
             .attr("fill", "none")
             .attr("d",function(d){return planetDataLineGenerator(d.sameDayPos)})
+
+
+//        planetData.forEach(function(d, i){
+//            var futurePlanetGroup = document.querySelector('#future{}'.format(i));
+//            var circleNodes = futurePlanetGroup.getElementsByTagName('circle');
+//            d3.selectAll(circleNodes).data(d.sameTimePos).merge(d3.selectAll(circleNodes))
+//                .attr('cx', function(di){return di.cx})
+//                .attr('cy', function(di){return di.cy})
+//                .attr('r', function(di){return 0.2*di.r})
+//                .style("fill", black.format(0.0))
+//        })
     }
-//    planetData.forEach(function(d, i){
-//        var futurePlanetGroup = document.querySelector('#future{}'.format(i));
-//        var circleNodes = futurePlanetGroup.getElementsByTagName('circle');
-//        d3.selectAll(circleNodes).data(d.sameTimePos).merge(d3.selectAll(circleNodes))
-//            .attr('cx', function(di){return di.cx})
-//            .attr('cy', function(di){return di.cy})
-//            .attr('r', function(di){return 0.2*di.r})
-//            .style("fill", black.format(0.0))
-//    })
+
 
 }
 
@@ -351,7 +354,6 @@ var positionErrorHandler = function(error){
             console.log("An unknown error occurred.")
             break;
     }
-
 }
 
 var requestPlanetPosition = function(positionObject, callback){

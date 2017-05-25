@@ -62,6 +62,10 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
 
         this.polarPlotAngular = polarPlotAngular ;
         this.polarPlotRadial = polarPlotRadial ;
+        this.outerCircle = extendGroup.append('circle')
+            .style("stroke", "rgba(0,0,0,0.4")
+            .style('fill', 'none')
+            .attr('r', radius)
     }
 
     this.hide = function(transitionTime){
@@ -73,6 +77,10 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
             .transition()
             .duration(transitionTime)
             .style('opacity',0.0)
+        this.outerCircle
+            .transition()
+            .duration(transitionTime)
+            .style('opacity', 0.0)
     }
 
     this.show = function(transitionTime){
@@ -84,6 +92,10 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
             .transition()
             .duration(transitionTime)
             .style('opacity',1.0)
+        this.outerCircle
+            .transition()
+            .duration(transitionTime)
+            .style('opacity', 1.0)
     }
     this.setup() ;
 
