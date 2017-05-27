@@ -79,7 +79,7 @@ def get_planets():
         same_day_position = [] # the position of the planet on the same day, throughout the day. (For drawing arcs)
         same_time_position = [] # the position of the planet at the same time, but at different days
         time_var = utcnow
-        for i in xrange(14): # a fortnight
+        for i in xrange(28): # a month
             time_var += datetime.timedelta(days=1)
             observer.date = time_var
             ephem_obj.compute(observer)
@@ -89,12 +89,14 @@ def get_planets():
         observer.date = time_var
         ephem_obj.compute(observer)
         same_day_position.append([ephem_obj.az, ephem_obj.alt])
+        setting_time = None
         while (True):
         # for i in xrange(1344): # roughly two weeks
             time_var += datetime.timedelta(minutes=15)
             observer.date = time_var
             ephem_obj.compute(observer)
             if sign(ephem_obj.alt) != sign(same_day_position[-1][1]):
+                setting_time = time_var
                 break
             else:
                 same_day_position.append([ephem_obj.az, ephem_obj.alt])
@@ -104,7 +106,8 @@ def get_planets():
         ephem_obj.compute(observer)
         # app.logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, ephem_obj.az, ephem_obj.alt,
         #                                                                 ephem_obj.ra, ephem_obj.dec))
-        planet_list.append({'color': planet['color'],
+        planet_list.append({'setting_time':setting_time.strftime("%Hh:%Mm:%Ss"),
+                            'color': planet['color'],
                             'name': pl_key.capitalize(),
                             'size': planet['size'],
                             'sameDayPos': same_day_position,

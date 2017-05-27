@@ -11,6 +11,7 @@ function Logger(name, level,formatter){
         'ERROR':1,
         'INFO':2,
         'DEBUG':3,
+        'DEBUG1':4,
     }
     this.info = function(msg){
         if (this.logLevels[this.level] >= 2){
@@ -23,7 +24,11 @@ function Logger(name, level,formatter){
             this.consoleOutput(msg);
         }
     };
-
+    this.debug1 = function(msg){
+        if (this.logLevels[this.level] >= 4){
+            this.consoleOutput(msg);
+        }
+    }
     this.error = function(msg){
         if (this.logLevels[this.level] >= 1){
             this.consoleOutput(msg);

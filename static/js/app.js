@@ -39,6 +39,42 @@ function App(updateRate, logLevel){
         this.timer = setInterval(this.update(self), this.updateRate);
     };
 
+    this.setupAbout = function(){
+        var aboutHTML = `
+        <h6>Hover the mouse over objects to see
+        their name and current position in the sky. <br>
+        Hovering will also show the path of the planet until it reaches the horizon. <br>
+        Objects that are just outlines are below the horizon. <br>
+        Hover the mouse over the horizon see the paths of all the planets.</h6>
+        `
+        this.aboutTooltipDiv = d3.select("#title-bar").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0.0)
+        //    .style("background", "rgba(200,200,200,1.0)")
+            .style("background","rgba(255,255,255,1.0)")
+            .style("width", d3.select("#planet-plot").style('width'))
+            .style("max-height", "500px")
+            .html(aboutHTML)
+            .style('transform', 'translate({}px,{})'.format(0,d3.select("#title").style('height')))
+
+        var self = this ;
+        var aboutDiv = $("#about") ;
+        aboutDiv.mouseover(function(){
+            self.aboutTooltipDiv.transition()
+                .duration(200)
+                .style("opacity", .9);
+            $("#about h4").css("color", "#ce0e25")
+        }) ;
+
+        aboutDiv.mouseout(function(){
+            self.aboutTooltipDiv.transition()
+                .duration(200)
+                .style("opacity", 0);
+            $("#about h4").css("color", "#222")
+        }) ;
+    };
+
+
     this.getPosition = function(callbacks){
         this.logger.debug("getPosition: Called.")
         if (navigator.geolocation){
@@ -109,18 +145,38 @@ function App(updateRate, logLevel){
             var r = d3.scaleLinear()
                 .domain([90, 0])
                 .range([0, self.rad]);
+
+            self.setupAbout();
+
             self.polarPlot = new PolarPlotD3(self.polarPlotGroup, r, self.rad, {ticks:5,
                                                             angularLines:true,
                                                             radialLabels:true});
             self.polarPlot.show();
-
             self.planetTracker = new PlanetTracker(self.pos, data, self.dynamicGroup,
                                                         self.rad, self.width, self.height, self.logger.level);
+
             self.planetTracker.setup() ;
+            // self.polarPlot.outerArc
+            //     .on('mouseover', function(){
+            //         self.polarPlot.outerCircle
+            //             .transition()
+            //             .duration(self.planetTracker.hoverTransition)
+            //             .style('stroke-width',2);
+            //         self.planetTracker.showSettingTimes();
+            // })
+            //     .on('mouseout', function(){
+            //         self.polarPlot.outerCircle
+            //             .transition()
+            //             .duration(self.planetTracker.hoverTransition)
+            //             .style('stroke-width',1);
+            //         self.planetTracker.hideSettingTimes();
+            // })
+
+
         };
     }
 
 }
 
-app = new App(1000, "DEBUG") ;
+app = new App(2000, "DEBUG") ;
 app.init()

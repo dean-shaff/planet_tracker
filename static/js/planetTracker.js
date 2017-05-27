@@ -1,15 +1,16 @@
 function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel) {
+
     this.logger = new Logger("PlanetTracker", logLevel);
     this.pos = pos ;
     this.planetData = dataInit;
     this.bindElement = bindElement ;
-    this.toolTipDiv = d3.select("body").append("div")
-                            .attr("class", "tooltip")
-                            .style("opacity", 0.0);
+    // this.toolTipDiv = d3.select("body").append("div")
+    //                         .attr("class", "tooltip")
+    //                         .style("opacity", 0.0);
                             // .attr('transform', 'translate({}, {})'.format(width, height))
-    this.toolTipInitX = parseFloat(this.toolTipDiv.style('left'));
-    this.toolTipInitY = parseFloat(this.toolTipDiv.style('top'));
-    this.logger.info("Initial tool tip position: {}, {}".format(this.toolTipInitX, this.toolTipInitY));
+    // this.toolTipInitX = parseFloat(this.toolTipDiv.style('left'));
+    // this.toolTipInitY = parseFloat(this.toolTipDiv.style('top'));
+    // this.logger.info("Initial tool tip position: {}, {}".format(this.toolTipInitX, this.toolTipInitY));
     this.rad = rad ;
     this.width = width ;
     this.height = height ;
@@ -17,6 +18,7 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
     this.black = "rgba(0,0,0,{})" ;
     this.hoverTransition = 300 ;
     this.planetHovering = false ;
+    this.planets = [];
 
     this.toDegree = function(radian){
         return (180.*radian)/(Math.PI)
@@ -30,18 +32,48 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
             this.planetData[0].sameDayPos[0].cx,
             this.planetData[0].sameDayPos[0].cy
         ));
+        for (var i=0; i<this.planetData.length; i++){
+            planetGroup = this.bindElement.append('g');
+            planet = new D3Planet(self, planetGroup, this.planetData[i]);
+            planet.setup();
+            this.planets[i] = planet ;
+        }
 
-        var circleGroup = this.bindElement.selectAll('circle').data(this.planetData) ;
-        circleGroup.enter().append('circle')
-            .attr('cx', function(d){return d.sameDayPos[0].cx})
-            .attr('cy', function(d){return d.sameDayPos[0].cy})
-            .attr('class', function(d){return d.name})
-            .attr('r', function(d){return parseFloat(d.r)})
-            .attr('stroke', "rgba(0,0,0,0.2)")
-            .attr('stroke-width', function(d){return d.strokeWidth})
-            .style("fill", function(d){return d.planetColor})
-            .on("mouseover", this.mouseOverCallback(self))
-            .on("mouseout", this.mouseOutCallback(self))
+
+        // var circleGroup = this.bindElement.selectAll('circle').data(this.planetData) ;
+        // var textGroup = this.bindElement.selectAll('foreignObject').data(this.planetData) ;
+        //
+        // circleGroup.enter().append('circle')
+        //     .attr('cx', function(d){return d.sameDayPos[0].cx})
+        //     .attr('cy', function(d){return d.sameDayPos[0].cy})
+        //     .attr('class', function(d){return d.name})
+        //     .attr('r', function(d){return parseFloat(d.r)})
+        //     .attr('stroke', "rgba(0,0,0,0.2)")
+        //     .attr('stroke-width', function(d){return d.strokeWidth})
+        //     .style("fill", function(d){return d.planetColor})
+        //     .on("mouseover", this.mouseOverCallback(self))
+        //     .on("mouseout", this.mouseOutCallback(self))
+        //
+        // // textGroup.enter().append('text')
+        // //     .attr("x",function(d){return d.sameDayPos[0].cx})
+        // //     .attr("y",function(d){return d.sameDayPos[0].cx})
+        // //     .text(function(d){return "{} {}".format(d.name, d.setting_time)})
+        // //     .style("fill", this.black.format(1.0))
+        // textGroup.enter().append("foreignObject")
+        //     .attr("width",50)
+        //     .attr("height",50)
+        //     .attr('x', function(d){return d.sameDayPos[0].cx})
+        //     .attr('y', function(d){return d.sameDayPos[0].cx})
+        //     .style("opacity",1.0)
+        //     // .style("fill",this.black.format(0.0))
+        //     .append("xhtml:div")
+        //     .html(function(d){return "{}<br>{}".format(d.name, d.setting_time)})
+            // .append("text")
+            // .attr("dy", 10)
+            // .text(function(d){return "{}".format(d.setting_time)})
+
+        // console.log(textGroup);
+        // this.logger.debug("textGroup: {}".format(Object.keys(textGroup)));
     }
 
     this.createPlanetSameDayPaths = function(){
@@ -74,30 +106,56 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
         var self = this;
         this.updatePlanetData(self)(this.planetData);
         this.createPlanetCircles();
-        // this.createPlanetSameDayPaths();
+        this.createPlanetSameDayPaths();
         // this.createPlanetSameTimePaths();
     }
+    this.showSettingTimes = function(){
+        var self = this ;
+        this.logger.debug("showSettingTimes: Called.")
+        // this.planetData.forEach(function(e){
+        //     self.logger.debug("{}: {}".format(e.name, e.setting_time));
+        // })
+        var textGroup = this.bindElement.selectAll('foreignObject').data(this.planetData);
+        textGroup.merge(textGroup)
+            .transition()
+            .duration(this.hoverTransition)
+            .style("opacity",0.8)
+            // .style('fill', this.black.format(0.8))
+    }
 
-
+    this.hideSettingTimes = function(){
+        this.logger.debug("hideSettingTimes: Called.")
+        var textGroup = this.bindElement.selectAll('foreignObject').data(this.planetData);
+        textGroup.merge(textGroup)
+            .transition()
+            .duration(this.hoverTransition)
+            .style("opacity",0.0)
+            // .style('fill', this.black.format(0.0))
+    }
     // Callbacks
     this.updatePlanetCircles = function(self){
         return function(){
-    //        this.logger.debug("PlanetTracker.updatePlanetCircles: Called. this.planetData: {}".format(that.planetData[0].sameDayPos[0].cx))
-            var circleGroup = self.bindElement.selectAll('circle').data(self.planetData) ;
-            circleGroup.exit().remove();
-            circleGroup.merge(circleGroup)
-                .attr('cx', function(d){return d.sameDayPos[0].cx})
-                .attr('cy', function(d){return d.sameDayPos[0].cy})
-                .attr('class', function(d){return d.name})
-                .attr('r', function(d){return parseFloat(d.r)})
-                .attr('stroke', "rgba(0,0,0,0.2)")
-                .attr('stroke-width', function(d){return d.strokeWidth})
-                .style("fill", function(d){return d.planetColor})
-                .on("mouseover", self.mouseOverCallback(self))
-                .on("mouseout", self.mouseOutCallback(self));
+            var planet ;
+            // self.logger.debug("updatePlanetCircles: Called. this.planetData: {}".format(self.planetData[0].sameDayPos[0].cx))
+            for (var i=0; i<self.planetData.length; i++){
+                planet = self.planets[i]
+                planet.update(planet)(self.planetData[i]);
+            }
+            // var circleGroup = self.bindElement.selectAll('circle').data(self.planetData) ;
+            // circleGroup.exit().remove();
+            // circleGroup.merge(circleGroup)
+            //     .attr('cx', function(d){return d.sameDayPos[0].cx})
+            //     .attr('cy', function(d){return d.sameDayPos[0].cy})
+            //     .attr('class', function(d){return d.name})
+            //     .attr('r', function(d){return parseFloat(d.r)})
+            //     .attr('stroke', "rgba(0,0,0,0.2)")
+            //     .attr('stroke-width', function(d){return d.strokeWidth})
+            //     .style("fill", function(d){return d.planetColor})
+            //     .on("mouseover", self.mouseOverCallback(self))
+            //     .on("mouseout", self.mouseOutCallback(self));
     //        this.logger.debug(circleGroup);
-        }
-    }
+        };
+    };
 
     this.updatePlanetSameDayPaths = function(self){
         return function(){
@@ -105,18 +163,17 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
             var planetDataLineGenerator = d3.line()
                             .x(function(d){return d.cx})
                             .y(function(d){return d.cy}) ;
-
-            if (! that.planetHovering){
-                var pathGroup = bindElement.selectAll('path').data(that.planetData) ;
+            if (! self.planetHovering){
+                var pathGroup = bindElement.selectAll('path').data(self.planetData) ;
                 pathGroup.exit().remove();
                 pathGroup.merge(pathGroup)
-                    .style("stroke", that.black.format(0.0))
+                    .style("stroke", self.black.format(0.0))
                     .style("stroke-width", 2)
                     .attr("fill", "none")
                     .attr("d",function(d){return planetDataLineGenerator(d.sameDayPos)})
             }
-        }
-    }
+        };
+    };
 
     this.update = function(self){
         return function(){
@@ -124,11 +181,11 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
         //    console.log("PlanetTracker.update: Position: {}".format(self.pos));
             util.requestData("/get_planets", self.pos,
                         [self.updatePlanetData(self),
-                        self.updatePlanetCircles(self)]);
-                        // self.updatePlanetSameDayPaths(self),
+                        self.updatePlanetCircles(self),
+                        self.updatePlanetSameDayPaths(self)]);
                         // self.updatePlanetSameTimePaths(self)]);
         };
-    }
+    };
 
     this.updatePlanetData = function(self){
         return function(data){

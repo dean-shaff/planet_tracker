@@ -66,6 +66,19 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
             .style("stroke", "rgba(0,0,0,0.4")
             .style('fill', 'none')
             .attr('r', radius)
+
+        var tolerance = 15
+        var largeArc = d3.arc()
+            .innerRadius(radius - tolerance)
+            .outerRadius(radius + tolerance)
+            .startAngle(0)
+            .endAngle(2*Math.PI)
+
+        this.outerArc = extendGroup.append('path')
+                .attr('d', largeArc)
+                .attr('id', 'horizon')
+                .style("fill", "rgba(0,0,0,0.0)")
+                .style("stroke", "none");
     }
 
     this.hide = function(transitionTime){
