@@ -106,7 +106,7 @@ def get_planets():
         ephem_obj.compute(observer)
         # app.logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, ephem_obj.az, ephem_obj.alt,
         #                                                                 ephem_obj.ra, ephem_obj.dec))
-        planet_list.append({'setting_time':setting_time.strftime("%Hh:%Mm:%Ss"),
+        planet_list.append({'setting_time':setting_time.strftime("%H:%M:%S"),
                             'color': planet['color'],
                             'name': pl_key.capitalize(),
                             'size': planet['size'],

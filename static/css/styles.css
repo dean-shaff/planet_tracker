@@ -7,7 +7,7 @@ button{
 }
 
 hr{
-	padding-top:0px; 
+	padding-top:0px;
 	padding-bottom:0px;
 	margin-top: 1px;
 	margin-bottom: 12px;
@@ -31,7 +31,7 @@ div.tooltip {
     text-align: center;
     width: 70px;
     height: auto;
-    max-height: 60px;
+    max-height: 70px;
     padding: 5px;
     font: 14px sans-serif;
     background: lightsteelblue;

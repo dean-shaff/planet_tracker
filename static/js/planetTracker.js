@@ -38,28 +38,6 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
         this.createPlanets();
     }
 
-    this.showSettingTimes = function(){
-        var self = this ;
-        this.logger.debug("showSettingTimes: Called.")
-        // this.planetData.forEach(function(e){
-        //     self.logger.debug("{}: {}".format(e.name, e.setting_time));
-        // })
-        var textGroup = this.bindElement.selectAll('foreignObject').data(this.planetData);
-        textGroup.merge(textGroup)
-            .transition()
-            .duration(this.hoverTransition)
-            .style("opacity",0.8)
-            // .style('fill', this.black.format(0.8))
-    }
-
-    this.hideSettingTimes = function(){
-        this.logger.debug("hideSettingTimes: Called.")
-        var textGroup = this.bindElement.selectAll('foreignObject').data(this.planetData);
-        textGroup.merge(textGroup)
-            .transition()
-            .duration(this.hoverTransition)
-            .style("opacity",0.0)
-    }
     // Callbacks
     this.updatePlanets = function(self){
         return function(){

@@ -42,10 +42,9 @@ function App(updateRate, logLevel){
     this.setupAbout = function(){
         var aboutHTML = `
         <h6>Hover the mouse over objects to see
-        their name and current position in the sky. <br>
-        Hovering will also show the path of the planet until it reaches the horizon. <br>
-        Objects that are just outlines are below the horizon. <br>
-        Hover the mouse over the horizon see the paths of all the planets.</h6>
+        their name, current position in the sky, and approximate setting time.<br>
+        Hovering will also show the position of the object at the same time for the next 2 weeks.<br>
+        Objects that are just outlines are below the horizon.</h6>
         `
         this.aboutTooltipDiv = d3.select("#title-bar").append("div")
             .attr("class", "tooltip")

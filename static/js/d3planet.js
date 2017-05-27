@@ -5,6 +5,7 @@ function D3Planet(parent, bindElement, data){
     this.bindElement = bindElement ;
     this.planetGroup = bindElement.append('g');
     this.data = data ;
+    this.planetColor = this.data.planetColor;
     this.planetCircle = null;
     this.sameTimeCircles = null ;
     this.sameDayPath = null ;
@@ -19,18 +20,18 @@ function D3Planet(parent, bindElement, data){
     this.setup = function(){
         // Create the sameTimeCircles (the position of the planet at the same time on future days)
         var circleGroup = this.bindElement.selectAll('circle').data(this.data.sameTimePos)
-        circleGroup.enter().append('circle')
+        this.sameTimeCircles = circleGroup.enter().append('circle')
             .attr('cx', function(d){return d.cx})
             .attr('cy', function(d){return d.cy})
             .attr('r', function(d){return 0.2*d.r})
-            .style('fill', "rgba(0,0,0,0.1)")
+            .style('fill', this.parent.black.format(0.0))
 
         // Create the sameDayPath (the postion of the planet before sunrise)
-        this.sameDayPath = this.bindElement.append('path')
-            .style('stroke', this.parent.black.format(0.0))
-            .style('stroke-width',2)
-            .attr('fill',"none")
-            .attr('d', this.planetDataLineGenerator(this.data.sameDayPos))
+        // this.sameDayPath = this.bindElement.append('path')
+        //     .style('stroke', this.parent.black.format(0.0))
+        //     .style('stroke-width',2)
+        //     .attr('fill',"none")
+        //     .attr('d', this.planetDataLineGenerator(this.data.sameDayPos))
 
         // Create the planet circle
         this.planetCircle = this.planetGroup.append("circle")
@@ -48,38 +49,40 @@ function D3Planet(parent, bindElement, data){
     this.update = function(self){
         return function(data){
             self.data = data ;
+            var opacity = 0.0
+            var planetStrokeWidth = 0.0;
+            if (self.planetHovering){
+                opacity = 0.2;
+                planetStrokeWidth = 2.0;
+            }else{
+                planetStrokeWidth = self.data.strokeWidth;
+            }
+
             // Update the sameTimeCircles (the position of the planet at the same time on future days)
             var circleGroup = self.bindElement.selectAll('circle').data(self.data.sameTimePos)
             circleGroup.exit().remove();
             circleGroup.merge(circleGroup)
                 .attr('cx', function(d){return d.cx})
                 .attr('cy', function(d){return d.cy})
-                .attr('r', function(d){return 0.2*d.r})
-                .style('fill', "rgba(0,0,0,0.1)")
+                .attr('r', function(d){return 0.4*d.r})
+                .style('fill',self.parent.black.format(opacity));
 
-            var strokeAlpha = 0.0;
-            var planetStrokeWidth = 0.0;
-            if (self.planetHovering){
-                strokeAlpha = 0.2;
-                planetStrokeWidth = 2.0;
-            }else{
-                planetStrokeWidth = self.data.strokeWidth;
-            }
             self.planetCircle
                 .attr('cx',self.data.sameDayPos[0].cx)
                 .attr('cy',self.data.sameDayPos[0].cy)
                 .attr('r', self.data.r)
                 .style('fill',self.data.planetColor)
-                .attr('stroke', "rgba(0,0,0,0.2)")
+                .style('opacity',1.0)
+                .attr('stroke', self.parent.black.format(0.2))
                 .attr('stroke-width',planetStrokeWidth)
                 .on('mouseover', self.mouseOverCallback(self))
-                .on('mouseout', self.mouseOutCallback(self))
+                .on('mouseout', self.mouseOutCallback(self));
 
-            self.sameDayPath
-                .style('stroke', self.parent.black.format(strokeAlpha))
-                .style('stroke-width',2)
-                .attr('fill',"none")
-                .attr('d', self.planetDataLineGenerator(self.data.sameDayPos))
+            // self.sameDayPath
+            //     .style('stroke', self.parent.black.format(strokeAlpha))
+            //     .style('stroke-width',2)
+            //     .attr('fill',"none")
+            //     .attr('d', self.planetDataLineGenerator(self.data.sameDayPos))
         };
     }
 
@@ -96,10 +99,11 @@ function D3Planet(parent, bindElement, data){
             var divX = parseFloat(parseFloat(self.data.sameDayPos[0].cx) + self.parent.width/2 - divWidth/2 - divPadding/2, 10);
             var divY = parseFloat(parseFloat(self.data.sameDayPos[0].cy) - self.parent.height/2 - divHeight - self.data.r - divPadding, 10);
             self.parent.logger.debug1("planetTracker.mouseOverCallback: Calculated Position: {}, {}".format(divX, divY));
-            self.planetToolTip.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg;".format(
+            self.planetToolTip.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg<br/>{}".format(
                                 self.data.name,
                                 self.parent.toDegree(self.data.sameDayPos[0].az),
-                                self.parent.toDegree(self.data.sameDayPos[0].alt)))
+                                self.parent.toDegree(self.data.sameDayPos[0].alt),
+                                self.data.setting_time))
                 .style("transform","translate({}px,{}px)".format(divX.toFixed(1),divY.toFixed(1)))
                 .style("background", "rgba(100,100,100,0.2)") ;
 
@@ -113,20 +117,15 @@ function D3Planet(parent, bindElement, data){
                 .duration(self.parent.hoverTransition)
                 .attr('stroke-width', 2)
 
-            self.sameDayPath
+            self.sameTimeCircles
                 .transition()
                 .duration(self.parent.hoverTransition)
-                .style('stroke', self.parent.black.format(0.2))
-
-            // d3.select(this.parentNode).selectAll('path')
+                .style('fill', self.parent.black.format(0.2))
+                // .style('opacity',0.2)
+            // self.sameDayPath
             //     .transition()
             //     .duration(self.parent.hoverTransition)
-            //     .style("stroke", function(di, ind){
-            //                         if (ind == i){
-            //                             return self.parent.black.format(0.2)
-            //                         } else
-            //                             return self.parent.black.format(0.0)
-            //      })
+            //     .style('stroke', self.parent.black.format(0.2))
 
         }
     }
@@ -149,10 +148,14 @@ function D3Planet(parent, bindElement, data){
         //        .style('fill', self.data.planetColor)
                 .attr('stroke-width', self.data.strokeWidth);
 
-            self.sameDayPath
+            self.sameTimeCircles
                 .transition()
                 .duration(self.parent.hoverTransition)
-                .style('stroke', self.parent.black.format(0.0))
+                .style('fill', self.parent.black.format(0.0))
+            // self.sameDayPath
+            //     .transition()
+            //     .duration(self.parent.hoverTransition)
+            //     .style('stroke', self.parent.black.format(0.0))
 
             self.parent.logger.debug("Took {:.2f} seconds".format(performance.now() - time))
             // d3.select(this.parentNode).selectAll('path')
