@@ -64,7 +64,7 @@ function D3Planet(parent, bindElement, data){
             circleGroup.merge(circleGroup)
                 .attr('cx', function(d){return d.cx})
                 .attr('cy', function(d){return d.cy})
-                .attr('r', function(d){return 0.4*d.r})
+                .attr('r', function(d){return 0.2*d.r})
                 .style('fill',self.parent.black.format(opacity));
 
             self.planetCircle
