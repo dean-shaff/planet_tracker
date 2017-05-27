@@ -9,7 +9,6 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
     this.height = height ;
     this.black = "rgba(0,0,0,{})" ;
     this.hoverTransition = 300 ;
-    this.planetHovering = false ;
     this.planets = [];
 
     this.toDegree = function(radian){
