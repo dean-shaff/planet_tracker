@@ -3,6 +3,7 @@ import datetime
 import json
 import logging
 import sys
+import math
 
 import ephem
 from flask import Flask, render_template, jsonify, request
@@ -32,10 +33,7 @@ def sign(n):
     """
     Get the sign of the argument
     Args:
-        n:
-
-    Returns:
-
+        n (float/int):
     """
     if n > 0:
         return 1
@@ -43,7 +41,6 @@ def sign(n):
         return -1
     elif n == 0:
         return 0
-
 
 @app.route("/get_planets", methods=['POST'])
 def get_planets():
@@ -91,7 +88,6 @@ def get_planets():
         same_day_position.append([ephem_obj.az, ephem_obj.alt])
         setting_time = None
         while (True):
-        # for i in xrange(1344): # roughly two weeks
             time_var += datetime.timedelta(minutes=15)
             observer.date = time_var
             ephem_obj.compute(observer)
@@ -104,14 +100,16 @@ def get_planets():
 
         # app.logger.debug("Took {:.2f} seconds to compute planet {}".format(time.time() - ti, pl_key))
         ephem_obj.compute(observer)
+        # print(ephem_obj.mag)
         # app.logger.debug("{}: AZ: {} ALT: {}\nRA: {} DEC: {}".format(pl_key, ephem_obj.az, ephem_obj.alt,
         #                                                                 ephem_obj.ra, ephem_obj.dec))
         planet_list.append({'setting_time':setting_time.strftime("%H:%M:%S"),
                             'color': planet['color'],
                             'name': pl_key.capitalize(),
-                            'size': planet['size'],
+                            'size': math.log(ephem_obj.size),
                             'sameDayPos': same_day_position,
-                            'sameTimePos': same_time_position})
+                            'sameTimePos': same_time_position,
+                            'magnitude':ephem_obj.mag})
 
     app.logger.debug("Took {:.2f} seconds to compute planet positions".format(time.time() - t0))
 

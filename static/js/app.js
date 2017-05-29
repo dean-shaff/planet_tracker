@@ -20,15 +20,21 @@ var util = {
             }
         });
     },
+    mapRange: function(low1, high1, low2, high2){
+        var diff1 = high1 - low1 ;
+        var diff2 = high2 - low2 ;
+        return function(x){
+            return (((x - low1)/diff1) * diff2) + low2;
+        }
+    }
 }
-
 
 function App(updateRate, logLevel){
 
     this.updateRate = updateRate ;
     this.height = $(window).height();
     this.width = $(window).width();
-    this.rad = (Math.min(this.width, this.height) / 2) - 50;
+    this.rad = (Math.min(this.width, this.height) / 2) - 80;
     this.pos = {};
     this.logger = new Logger("App", logLevel);
 
@@ -44,6 +50,7 @@ function App(updateRate, logLevel){
         <h6>Hover the mouse over objects to see
         their name, current position in the sky, and approximate setting time.<br>
         Hovering will also show the position of the object at the same time for the next 2 weeks.<br>
+        Setting times are displayed in UTC time.<br>
         Objects that are just outlines are below the horizon.</h6>
         `
         this.aboutTooltipDiv = d3.select("#title-bar").append("div")
@@ -177,5 +184,5 @@ function App(updateRate, logLevel){
 
 }
 
-app = new App(2000, "DEBUG") ;
+app = new App(5000, "DEBUG") ;
 app.init()

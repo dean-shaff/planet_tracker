@@ -10,6 +10,7 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
     this.black = "rgba(0,0,0,{})" ;
     this.hoverTransition = 300 ;
     this.planets = [];
+    this.alphaMapper = util.mapRange(7, -27, 0.1, 1);
 
     this.toDegree = function(radian){
         return (180.*radian)/(Math.PI)
@@ -67,8 +68,8 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
             var planetColor ;
             var strokeWidth ;
             self.planetData = data ;
-            self.planetData.forEach(function(d, i ){
-                d.r = d.size * parseInt((rad)/ 25., 10);
+            self.planetData.forEach(function(d, i){
+                d.r = d.size * parseInt((rad)/ 50., 10);
                 d.sameDayPos.forEach(function(di){
                     di.az = di[0];
                     di.alt = di[1];
@@ -86,8 +87,9 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
                     di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
                     di.r = d.r
                 })
+                self.logger.debug1("{}: {}".format(d.name, self.alphaMapper(d.magnitude)));
                 if (d.sameDayPos[0].alt >= 0){
-                    planetColor = d.color.format(0.8);
+                    planetColor = d.color.format(self.alphaMapper(d.magnitude));
                     strokeWidth = 0 ;
                 }else{
                     planetColor = d.color.format(0.0);

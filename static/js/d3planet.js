@@ -88,6 +88,7 @@ function D3Planet(parent, bindElement, data){
 
     this.mouseOverCallback = function(self){
         return function(){
+            self.parent.logger.debug("mouseOverCallback: Called.")
             self.planetHovering = true ;
             self.planetToolTip.transition()
                 .duration(self.parent.hoverTransition)
