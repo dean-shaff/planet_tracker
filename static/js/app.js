@@ -1,85 +1,30 @@
-debugMode = false;
+function App(socket, updateRate, logLevel){
 
-var util = {
-    requestData: function(route, position, callbacks){
-        // console.log("Route: {}, Position: {}".format(route, position));
-        position.continuous = debugMode ;
-        $.ajax({
-            type:"POST",
-            url: $SCRIPT_ROOT+route,
-            data : JSON.stringify(position),
-            success: function(msg){
-                var data = JSON.parse(msg.result);
-                // console.log(data[0].name);
-                callbacks.forEach(function(callback){
-                    callback(data) ;
-                })
-            },
-            failure: function(msg){
-                console.log("Failure message from server: "+msg);
-            }
-        });
-    },
-    mapRange: function(low1, high1, low2, high2){
-        var diff1 = high1 - low1 ;
-        var diff2 = high2 - low2 ;
-        return function(x){
-            return (((x - low1)/diff1) * diff2) + low2;
-        }
-    }
-}
-
-function App(updateRate, logLevel){
-
+    this.socket = socket ;
     this.updateRate = updateRate ;
     this.height = $(window).height();
     this.width = $(window).width();
-    this.rad = (Math.min(this.width, this.height) / 2) - 80;
+    this.radius = null ;
     this.pos = {};
     this.logger = new Logger("App", logLevel);
 
     this.init = function() {
         var self = this;
         this.logger.debug("init: Called");
-        this.getPosition([this.setPosition(self), this.makeInitRequest(self)]) ;
-        this.timer = setInterval(this.update(self), this.updateRate);
-    };
-
-    this.setupAbout = function(){
-        var aboutHTML = `
-        <h6>Hover the mouse over objects to see
-        their name, current position in the sky, and approximate setting time.<br>
-        Hovering will also show the position of the object at the same time for the next 2 weeks.<br>
-        Setting times are displayed in UTC time.<br>
-        Objects that are just outlines are below the horizon.</h6>
-        `
-        this.aboutTooltipDiv = d3.select("#title-bar").append("div")
-            .attr("class", "tooltip")
-            .style("opacity", 0.0)
-        //    .style("background", "rgba(200,200,200,1.0)")
-            .style("background","rgba(255,255,255,1.0)")
-            .style("width", d3.select("#planet-plot").style('width'))
-            .style("max-height", "500px")
-            .html(aboutHTML)
-            .style('transform', 'translate({}px,{})'.format(0,d3.select("#title").style('height')))
-
+        this.setupSocket();
+        this.setup();
+        // this.timer = setInterval(this.update(self), this.updateRate);
+    }
+    this.updateSocket = function(socket){
+        this.socket = socket ;
+    }
+    this.setupSocket = function(socket){
         var self = this ;
-        var aboutDiv = $("#about") ;
-        aboutDiv.mouseover(function(){
-            self.aboutTooltipDiv.transition()
-                .duration(200)
-                .style("opacity", .9);
-            $("#about h4").css("color", "#ce0e25")
-        }) ;
-
-        aboutDiv.mouseout(function(){
-            self.aboutTooltipDiv.transition()
-                .duration(200)
-                .style("opacity", 0);
-            $("#about h4").css("color", "#222")
-        }) ;
-    };
-
+        // this.socket.on("get_planets_cb", function(data){
+        //     console.log("get_planets_cb: Called.")
+        //     self.setup(self)(data);
+        // })
+    }
 
     this.getPosition = function(callbacks){
         this.logger.debug("getPosition: Called.")
@@ -118,17 +63,15 @@ function App(updateRate, logLevel){
     };
 
     // Below we define callback functions that get used.
-    this.setPosition = function(self){
-        return function(pos){
-            self.pos = pos ;
-            self.logger.debug("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
-        };
-    }
+
+
 
     this.makeInitRequest = function(self){
         return function(pos){
             self.logger.debug("makeInitRequest: Called.")
-            util.requestData("/get_planets", pos, [self.setup(self)]);
+            self.socket.emit("get_planets", {kwargs: {pos: pos, cb_info:{
+                cb: "get_planets_cb"
+            }}})
         };
     };
 
@@ -138,51 +81,93 @@ function App(updateRate, logLevel){
         };
     };
 
-    this.setup = function(self){
-        return function(data){
-            self.svg = d3.select('body').append("svg")
-                .attr("width", self.width)
-                .attr("height", self.height)
-                .append("g")
-                .attr("transform", "translate(" + self.width / 2 + "," + self.height / 2 + ")");
-            self.staticGroup = self.svg.append("g");
-            self.dynamicGroup = self.svg.append("g");
-            self.polarPlotGroup = self.svg.append("g");
-            var r = d3.scaleLinear()
-                .domain([90, 0])
-                .range([0, self.rad]);
+    this.setupAbout =  function(){
+        var self = this ;
+        var aboutHTML = `
+        <h6>Hover the mouse over objects to see
+        their name, current position in the sky, and approximate setting time.<br>
+        Hovering will also show the position of the object at the same time for the next 2 weeks.<br>
+        Setting times are displayed in UTC time.<br>
+        Objects that are just outlines are below the horizon.</h6>
+        `
+        self.aboutTooltipDiv = d3.select("#title-bar").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0.0)
+        //    .style("background", "rgba(200,200,200,1.0)")
+            .style("background","rgba(255,255,255,1.0)")
+            .style("width", d3.select("#planet-plot").style('width'))
+            .style("max-height", "500px")
+            .html(aboutHTML)
+            .style('transform', 'translate({}px,{})'.format(0,d3.select("#title").style('height')))
 
-            self.setupAbout();
+        var aboutDiv = $("#about") ;
+        aboutDiv.mouseover(function(){
+            self.aboutTooltipDiv.transition()
+                .duration(200)
+                .style("opacity", .9);
+            $("#about h4").css("color", "#ce0e25")
+        }) ;
 
-            self.polarPlot = new PolarPlotD3(self.polarPlotGroup, r, self.rad, {ticks:5,
-                                                            angularLines:true,
-                                                            radialLabels:true});
-            self.polarPlot.show();
-            self.planetTracker = new PlanetTracker(self.pos, data, self.dynamicGroup,
-                                                        self.rad, self.width, self.height, self.logger.level);
+        aboutDiv.mouseout(function(){
+            self.aboutTooltipDiv.transition()
+                .duration(200)
+                .style("opacity", 0);
+            $("#about h4").css("color", "#222")
+        }) ;
 
-            self.planetTracker.setup() ;
-            // self.polarPlot.outerArc
-            //     .on('mouseover', function(){
-            //         self.polarPlot.outerCircle
-            //             .transition()
-            //             .duration(self.planetTracker.hoverTransition)
-            //             .style('stroke-width',2);
-            //         self.planetTracker.showSettingTimes();
-            // })
-            //     .on('mouseout', function(){
-            //         self.polarPlot.outerCircle
-            //             .transition()
-            //             .duration(self.planetTracker.hoverTransition)
-            //             .style('stroke-width',1);
-            //         self.planetTracker.hideSettingTimes();
-            // })
+    }
 
+    this.setupPolarPlot = function(){
+        self.rad = (Math.min(self.width, self.height) / 2) - 40;
+        self.svg = d3.select('body').append("svg")
+            .attr("width", self.width)
+            .attr("height", self.height)
+            .append("g")
+            .attr("transform", "translate(" + self.width / 2 + "," + self.height / 2 + ")");
+        self.staticGroup = self.svg.append("g");
+        self.dynamicGroup = self.svg.append("g");
+        self.polarPlotGroup = self.svg.append("g");
+        var r = d3.scaleLinear()
+            .domain([90, 0])
+            .range([0, self.rad]);
 
-        };
+        self.logger.debug("")
+        self.polarPlot = new PolarPlotD3(self.polarPlotGroup, r, self.rad, {ticks:5,
+                                                        angularLines:true,
+                                                        radialLabels:true});
+        self.polarPlot.show();
+    }
+
+    this.setPosition =function(position){
+        this.pos = position ;
+        this.logger.debug("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
+    };
+
+    this.setupPlanetTracker = function(position){
+        this.pos = position ;
+        this.planetTracker = new PlanetTracker(this.socket, position, {}, this.dynamicGroup,
+                                                    this.rad, this.width, this.height, this.logger.level);
+
+        this.planetTracker.setup() ;
+    }
+
+    this.setup = function(){
+        this.setupAbout() ;
+        this.setupPolarPlot() ;
+        this.getPosition([this.setPosition.bind(this), this.setupPlanetTracker.bind(this)]) ;
     }
 
 }
 
-app = new App(5000, "DEBUG") ;
-app.init()
+$(document).ready(function(){
+    var app ;
+    var port = location.port;
+    var domain= document.domain;
+    var socket = io.connect("http://{}:{}".format(domain, port));
+    app = new App(socket, 5000, "DEBUG") ;
+    socket.on('connect', function(){
+        console.info("Updating App's socket connection");
+        app.updateSocket(socket);
+    })
+    app.init()
+})

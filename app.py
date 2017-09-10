@@ -7,12 +7,16 @@ import math
 
 import ephem
 from flask import Flask, render_template, jsonify, request
+from flask_socketio import SocketIO, send, emit
+import gevent
 
 observer = ephem.Observer()
 observer.pressure = 0
 observer.epoch = ephem.J2000
 
 app = Flask(__name__)
+app.config["SECRET_KEY"] = "planet-app"
+socketio = SocketIO(app)
 module_logger = logging.getLogger(__name__)
 
 startup_time = datetime.datetime.utcnow()
@@ -42,8 +46,8 @@ def sign(n):
     elif n == 0:
         return 0
 
-@app.route("/get_planets", methods=['POST'])
-def get_planets():
+@socketio.on("get_planets")
+def get_planets(data):
     """
     Args:
         current_position (dict): A dictionary containing the current position of the observer.
@@ -51,12 +55,14 @@ def get_planets():
         dict: Containing az/alt information about the 7 non earth planets.
             The az/alt information is in radians.
     """
-    current_position = request.get_json(force=True)
-    observer.lon = str(current_position['lon'])
-    observer.lat = str(current_position['lat'])
-    observer.elevation = current_position['elevation']
+    observer.lon = str(data['kwargs']['pos']['lon'])
+    observer.lat = str(data['kwargs']['pos']['lat'])
+    observer.elevation = data['kwargs']['pos']['elevation']
     app.logger.debug("Lat: {}, Lon: {}".format(observer.lat, observer.lon))
-    continuous = current_position['continuous']
+    continuous = False
+    cb_info = data['kwargs']['cb_info']
+    cb = cb_info['cb']
+    app.logger.debug("cb name: {}".format(cb))
     if continuous:
         global startup_time
         startup_time += datetime.timedelta(minutes=15)
@@ -112,8 +118,9 @@ def get_planets():
                             'magnitude':ephem_obj.mag})
 
     app.logger.debug("Took {:.2f} seconds to compute planet positions".format(time.time() - t0))
-
-    return jsonify(result=json.dumps(planet_list))
+    with app.test_request_context("/"):
+        socketio.emit(cb, planet_list)
+    # return planet_list
 
 @app.route("/")
 def main():
@@ -121,10 +128,13 @@ def main():
     return render_template("index.html")
 
 if __name__ == '__main__':
-    app.logger.setLevel(logging.INFO)
+    app.logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(levelname)s-%(name)s-%(message)s")
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
     app.logger.addHandler(sh)
-    app.run(debug=True, host='127.0.0.1', port=5001)
+    socketio.run(app, debug=True, host='10.224.44.158')
+    # app.run(debug=True, host='127.0.0.1', port=5001, threaded=True)
+    # app.run(debug=True, host='10.224.44.158', port=5001, threaded=True)
+
     # app.run(debug=True, host='0.0.0.0', port=5000)

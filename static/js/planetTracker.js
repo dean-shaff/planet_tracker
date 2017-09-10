@@ -1,6 +1,7 @@
-function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel) {
+function PlanetTracker(socket, pos, dataInit, bindElement, rad, width, height, logLevel) {
 
     this.logger = new Logger("PlanetTracker", logLevel);
+    this.socket = socket;
     this.pos = pos ;
     this.planetData = dataInit;
     this.bindElement = bindElement ;
@@ -39,6 +40,15 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
         this.createPlanets();
     }
 
+    this.setupSocket = function(){
+        var self = this ;
+        this.socket.on("planetTracker.get_planets_cb", function(data){
+            self.logger.debug("get_planets_cb: Called.")
+            self.updatePlanetData(self)(data)
+            self.updatePlanets(self)(data)
+        })
+    }
+
     // Callbacks
     this.updatePlanets = function(self){
         return function(){
@@ -56,9 +66,12 @@ function PlanetTracker(pos, dataInit, bindElement, rad, width, height, logLevel)
         return function(){
             self.logger.debug1("PlanetTracker.update: Called.")
             self.logger.debug1("PlanetTracker.update: Position: {}".format(self.pos));
-            util.requestData("/get_planets", self.pos,
-                        [self.updatePlanetData(self),
-                        self.updatePlanets(self)]);
+            // util.requestData("/get_planets", self.pos,
+            //             [self.updatePlanetData(self),
+            //             self.updatePlanets(self)]);
+            self.socket.emit("get_planets", {kwargs: {pos: pos, cb_info:{
+                cb: "planetTracker.get_planets_cb"
+            }}})
         };
     };
 
