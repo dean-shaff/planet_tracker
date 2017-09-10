@@ -24,5 +24,9 @@ var util = {
         return function(x){
             return (((x - low1)/diff1) * diff2) + low2;
         }
+    },
+
+    toDegree: function(radian){
+            return (180.*radian)/(Math.PI)
     }
 }

@@ -2,10 +2,8 @@ function App(socket, updateRate, logLevel){
 
     this.socket = socket ;
     this.updateRate = updateRate ;
-    this.height = $(window).height();
-    this.width = $(window).width();
     this.radius = null ;
-    this.pos = {};
+    this.position = {};
     this.logger = new Logger("App", logLevel);
 
     this.init = function() {
@@ -46,7 +44,7 @@ function App(socket, updateRate, logLevel){
                         case error.PERMISSION_DENIED:
                             console.log("User denied the request for Geolocation.") ;
                             break;
-                        case error.POSITION_UNAVAILABLE:
+                        case error.positionITION_UNAVAILABLE:
                             console.log("Location information is unavailable.") ;
                             break;
                         case error.TIMEOUT:
@@ -56,15 +54,14 @@ function App(socket, updateRate, logLevel){
                             console.log("An unknown error occurred.")
                             break;
                     }
+                    callbacks.forEach(function(callback){
+                        callback() ;
+                    })
                 });
         } else {
             this.logger.error("Browser doesn't support geolocation");
         } ;
     };
-
-    // Below we define callback functions that get used.
-
-
 
     this.makeInitRequest = function(self){
         return function(pos){
@@ -117,54 +114,45 @@ function App(socket, updateRate, logLevel){
 
     }
 
-    this.setupPolarPlot = function(){
-        self.rad = (Math.min(self.width, self.height) / 2) - 40;
-        self.svg = d3.select('body').append("svg")
-            .attr("width", self.width)
-            .attr("height", self.height)
-            .append("g")
-            .attr("transform", "translate(" + self.width / 2 + "," + self.height / 2 + ")");
-        self.staticGroup = self.svg.append("g");
-        self.dynamicGroup = self.svg.append("g");
-        self.polarPlotGroup = self.svg.append("g");
-        var r = d3.scaleLinear()
-            .domain([90, 0])
-            .range([0, self.rad]);
-
-        self.logger.debug("")
-        self.polarPlot = new PolarPlotD3(self.polarPlotGroup, r, self.rad, {ticks:5,
-                                                        angularLines:true,
-                                                        radialLabels:true});
-        self.polarPlot.show();
-    }
-
     this.setPosition =function(position){
-        this.pos = position ;
-        this.logger.debug("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
+        this.position = position ;
+        this.logger.debug("setPosition: new position lat and lon is {}, {}".format(this.position.lat, this.position.lon));
     };
 
     this.setupPlanetTracker = function(position){
-        this.pos = position ;
-        this.planetTracker = new PlanetTracker(this.socket, position, {}, this.dynamicGroup,
-                                                    this.rad, this.width, this.height, this.logger.level);
-
+        this.position = position ;
+        this.planetTracker = new PlanetTracker(this.socket, "#planet-plot",
+                                                    $("#planet-plot").width(),
+                                                    this.calculatePlotHeight(),
+                                                    position, this.logger.level);
         this.planetTracker.setup() ;
+        var self = this ;
+        $(window).on("resize", function(){
+            self.logger.debug("window resized.")
+            self.planetTracker.setupPolarPlot({
+                width: $("#planet-plot").width(),
+                height: self.calculatePlotHeight()
+            });
+        });
     }
 
     this.setup = function(){
         this.setupAbout() ;
-        this.setupPolarPlot() ;
         this.getPosition([this.setPosition.bind(this), this.setupPlanetTracker.bind(this)]) ;
     }
 
+    this.calculatePlotHeight = function(){
+        return $(window).height() - $("#title-bar").height();
+    }
 }
 
 $(document).ready(function(){
+    logging.setLevel(logging.levels.DEBUG);
     var app ;
     var port = location.port;
-    var domain= document.domain;
+    var domain = document.domain;
     var socket = io.connect("http://{}:{}".format(domain, port));
-    app = new App(socket, 5000, "DEBUG") ;
+    app = new App(socket, 5000, logging.levels.DEBUG) ;
     socket.on('connect', function(){
         console.info("Updating App's socket connection");
         app.updateSocket(socket);

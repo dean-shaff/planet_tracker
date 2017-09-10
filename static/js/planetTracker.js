@@ -1,21 +1,32 @@
-function PlanetTracker(socket, pos, dataInit, bindElement, rad, width, height, logLevel) {
+function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
 
-    this.logger = new Logger("PlanetTracker", logLevel);
     this.socket = socket;
-    this.pos = pos ;
-    this.planetData = dataInit;
     this.bindElement = bindElement ;
-    this.rad = rad ;
     this.width = width ;
     this.height = height ;
+    if (! position){
+        // Even if we don't supply position, make sure it defaults to somewhere.
+        // In this case, Abu Dhabi, UAE.
+        position = {
+            lat: 24.47,
+            lon: 54.36,
+            elevation: 0
+        }
+    }
+    this.position = position ;
+    this.position = position ;
+    if (! logLevel){
+        logLevel = logging.levels.INFO;
+    }
+    this.logger = new Logger("PlanetTracker", logLevel);
+    this.polarPlot = null ;
+    this.planetData = null;
+
     this.black = "rgba(0,0,0,{})" ;
     this.hoverTransition = 300 ;
     this.planets = [];
     this.alphaMapper = util.mapRange(7, -27, 0.1, 1);
 
-    this.toDegree = function(radian){
-        return (180.*radian)/(Math.PI)
-    }
 
     this.createPlanets = function(){
         var self = this;
@@ -26,18 +37,18 @@ function PlanetTracker(socket, pos, dataInit, bindElement, rad, width, height, l
             this.planetData[0].sameDayPos[0].cy
         ));
         for (var i=0; i<this.planetData.length; i++){
-            planetGroup = this.bindElement.append('g');
+            planetGroup = this.dynamicGroup.append('g');
             planet = new D3Planet(self, planetGroup, this.planetData[i]);
             planet.setup();
             this.planets[i] = planet ;
         }
     }
-
-
     this.setup = function(){
         var self = this;
-        this.updatePlanetData(self)(this.planetData);
-        this.createPlanets();
+        this.setupSocket();
+        this.setupPolarPlot();
+        // this.updatePlanetData(self)(this.planetData);
+        // this.createPlanets();
     }
 
     this.setupSocket = function(){
@@ -48,6 +59,43 @@ function PlanetTracker(socket, pos, dataInit, bindElement, rad, width, height, l
             self.updatePlanets(self)(data)
         })
     }
+
+    this.setupPolarPlot = function(dim){
+        var width ;
+        var height ;
+        if (! dim){
+            width = this.width;
+            height = this.height;
+        } else {
+            width = dim.width ;
+            height = dim.height;
+        }
+        this.logger.debug("setupPolarPlot: Called.")
+        this.rad = (Math.min(width, height) / 2) - 30;
+        d3.select(this.bindElement).html("")
+        this.svg = d3.select(this.bindElement).append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+        this.staticGroup = this.svg.append("g");
+        this.dynamicGroup = this.svg.append("g");
+        this.polarPlotGroup = this.svg.append("g");
+        var r = d3.scaleLinear()
+            .domain([90, 0])
+            .range([0, this.rad]);
+
+        this.logger.debug("")
+        this.polarPlot = new PolarPlotD3(this.polarPlotGroup, r, this.rad, {ticks:5,
+                                                        angularLines:true,
+                                                        radialLabels:true});
+        this.polarPlot.show();
+    }
+
+    this.updatePosition = function(position){
+        this.position = position ;
+        this.logger.debug("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
+    };
 
     // Callbacks
     this.updatePlanets = function(self){
@@ -65,8 +113,8 @@ function PlanetTracker(socket, pos, dataInit, bindElement, rad, width, height, l
     this.update = function(self){
         return function(){
             self.logger.debug1("PlanetTracker.update: Called.")
-            self.logger.debug1("PlanetTracker.update: Position: {}".format(self.pos));
-            // util.requestData("/get_planets", self.pos,
+            self.logger.debug1("PlanetTracker.update: Position: {}".format(self.position));
+            // util.requestData("/get_planets", self.position,
             //             [self.updatePlanetData(self),
             //             self.updatePlanets(self)]);
             self.socket.emit("get_planets", {kwargs: {pos: pos, cb_info:{

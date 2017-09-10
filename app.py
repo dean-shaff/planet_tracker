@@ -133,7 +133,9 @@ if __name__ == '__main__':
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
     app.logger.addHandler(sh)
-    socketio.run(app, debug=True, host='10.224.44.158')
+    # socketio.run(app, debug=True, host='10.224.44.158')
+    socketio.run(app, debug=True)
+
     # app.run(debug=True, host='127.0.0.1', port=5001, threaded=True)
     # app.run(debug=True, host='10.224.44.158', port=5001, threaded=True)
 
