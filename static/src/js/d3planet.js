@@ -4,12 +4,17 @@ function D3Planet(parent, bindElement, data){
     this.planetHovering = false ;
     this.bindElement = bindElement ;
     this.planetGroup = bindElement.append('g');
-    this.data = data ;
-    this.planetColor = this.data.planetColor;
+    if (data){
+        this.data = data ;
+        this.planetColor = this.data.planetColor;
+    } else {
+        this.data = null ;
+        this.planetColor = null ;
+    }
     this.planetCircle = null;
     this.sameTimeCircles = null ;
     this.sameDayPath = null ;
-    this.planetToolTip = d3.select("body").append("div")
+    this.planetToolTip = d3.select(this.parent.bindElement).append("div")
                             .attr("class", "tooltip")
                             .style("opacity",1.0)
 
@@ -19,12 +24,12 @@ function D3Planet(parent, bindElement, data){
 
     this.setup = function(){
         // Create the sameTimeCircles (the position of the planet at the same time on future days)
-        var circleGroup = this.bindElement.selectAll('circle').data(this.data.sameTimePos)
-        this.sameTimeCircles = circleGroup.enter().append('circle')
-            .attr('cx', function(d){return d.cx})
-            .attr('cy', function(d){return d.cy})
-            .attr('r', function(d){return 0.3*d.r})
-            .style('fill', this.parent.black.format(0.0))
+        // var circleGroup = this.bindElement.selectAll('circle').data(this.data.sameTimePos)
+        // this.sameTimeCircles = circleGroup.enter().append('circle')
+        //     .attr('cx', function(d){return d.cx})
+        //     .attr('cy', function(d){return d.cy})
+        //     .attr('r', function(d){return 0.3*d.r})
+        //     .style('fill', this.parent.black.format(0.0))
 
         // Create the sameDayPath (the postion of the planet before sunrise)
         // this.sameDayPath = this.bindElement.append('path')
@@ -34,15 +39,25 @@ function D3Planet(parent, bindElement, data){
         //     .attr('d', this.planetDataLineGenerator(this.data.sameDayPos))
 
         // Create the planet circle
-        this.planetCircle = this.planetGroup.append("circle")
-            .attr('cx',this.data.sameDayPos[0].cx)
-            .attr('cy',this.data.sameDayPos[0].cy)
-            .attr('r', this.data.r)
-            .style('fill',this.data.planetColor)
-            .attr('stroke', "rgba(0,0,0,0.2)")
-            .attr('stroke-width',this.data.strokeWidth)
-            .on('mouseover', this.mouseOverCallback(this))
-            .on('mouseout', this.mouseOutCallback(this))
+        if (this.data){
+            this.planetCircle = this.planetGroup.append("circle")
+                .attr('cx',this.data.sameDayPos[0].cx)
+                .attr('cy',this.data.sameDayPos[0].cy)
+                .attr('r', this.data.r)
+                .style('fill',this.data.planetColor)
+                .attr('stroke', "rgba(0,0,0,0.2)")
+                .attr('stroke-width',this.data.strokeWidth)
+                .on('mouseover', this.mouseOverCallback(this))
+                .on('mouseout', this.mouseOutCallback(this))
+        } else {
+            this.planetCircle = this.planetGroup.append("circle")
+                .attr('cx',0.0)
+                .attr('cy',0.0)
+                .attr('r', 0.0)
+                .style('fill',"rgba(0,0,0)")
+                .attr('stroke', "rgba(0,0,0,0.2)")
+                .attr('stroke-width',0.0)
+        }
 
     }
 
@@ -96,10 +111,14 @@ function D3Planet(parent, bindElement, data){
 
             var divWidth = parseInt(self.planetToolTip.style('width'), 10);
             var divHeight = parseInt(self.planetToolTip.style('max-height'), 10);
+            var parentDivWidth = $(self.parent.bindElement).width();
+            var parentDivHeight = $(self.parent.bindElement).height();
             var divPadding = 10 ;
-            var divX = parseFloat(parseFloat(self.data.sameDayPos[0].cx) + self.parent.width/2 - divWidth/2 - divPadding/2, 10);
-            var divY = parseFloat(parseFloat(self.data.sameDayPos[0].cy) - self.parent.height/2 - divHeight - self.data.r - divPadding, 10);
-            self.parent.logger.debug1("planetTracker.mouseOverCallback: Calculated Position: {}, {}".format(divX, divY));
+            var divX = parseFloat(parseFloat(self.data.sameDayPos[0].cx) + parentDivWidth/2 - divWidth/2 - divPadding/2, 10);
+            var divY = parseFloat(parseFloat(self.data.sameDayPos[0].cy) - parentDivHeight/2 - divHeight - self.data.r - divPadding*2, 10);
+            self.parent.logger.debug(`mouseOverCallback: width: ${self.parent.width}, height: ${self.parent.height}`)
+            self.parent.logger.debug(`mouseOverCallback: width: ${parentDivWidth}, height: ${parentDivHeight}`)
+            self.parent.logger.debug("mouseOverCallback: Calculated Position: {}, {}".format(divX, divY));
             self.planetToolTip.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg<br/>{}".format(
                                 self.data.name,
                                 util.toDegree(self.data.sameDayPos[0].az),
@@ -118,10 +137,10 @@ function D3Planet(parent, bindElement, data){
                 .duration(self.parent.hoverTransition)
                 .attr('stroke-width', 2)
 
-            self.sameTimeCircles
-                .transition()
-                .duration(self.parent.hoverTransition)
-                .style('fill', self.parent.black.format(0.2))
+            // self.sameTimeCircles
+            //     .transition()
+            //     .duration(self.parent.hoverTransition)
+            //     .style('fill', self.parent.black.format(0.2))
                 // .style('opacity',0.2)
             // self.sameDayPath
             //     .transition()
@@ -149,10 +168,10 @@ function D3Planet(parent, bindElement, data){
         //        .style('fill', self.data.planetColor)
                 .attr('stroke-width', self.data.strokeWidth);
 
-            self.sameTimeCircles
-                .transition()
-                .duration(self.parent.hoverTransition)
-                .style('fill', self.parent.black.format(0.0))
+            // self.sameTimeCircles
+            //     .transition()
+            //     .duration(self.parent.hoverTransition)
+            //     .style('fill', self.parent.black.format(0.0))
             // self.sameDayPath
             //     .transition()
             //     .duration(self.parent.hoverTransition)

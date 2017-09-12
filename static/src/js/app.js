@@ -67,11 +67,11 @@ function App(socket, updateRate, logLevel){
         };
     };
 
-    this.update = function(self){
-        return function(){
-            self.planetTracker.update(self.planetTracker)() ;
-        };
-    };
+    // this.update = function(self){
+    //     return function(){
+    //         self.planetTracker.update(self.planetTracker)() ;
+    //     };
+    // };
 
     this.setupAbout =  function(){
         var self = this ;
@@ -127,10 +127,10 @@ function App(socket, updateRate, logLevel){
         var self = this ;
         $(window).on("resize", function(){
             self.logger.debug("window resized.")
-            self.planetTracker.setupPolarPlot({
+            self.planetTracker.updatePlot({
                 width: $("#planet-plot").width(),
                 height: self.calculatePlotHeight()
-            });
+            })
         });
     }
 

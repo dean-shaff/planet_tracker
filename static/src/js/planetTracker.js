@@ -30,7 +30,6 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
     this.alphaMapper = util.mapRange(7, -27, 0.1, 1);
 
     this.setup = function(){
-        var self = this;
         this.setupSocket();
         this.setupPolarPlot();
         this.getPlanetData();
@@ -73,33 +72,35 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
             .domain([90, 0])
             .range([0, this.rad]);
 
-        this.logger.debug("")
         this.polarPlot = new PolarPlotD3(this.polarPlotGroup, r, this.rad, {ticks:5,
                                                         angularLines:true,
                                                         radialLabels:true});
         this.polarPlot.show();
+        this.planetsSetup = false;
     }
 
     this.updatePosition = function(position){
         this.position = position ;
         this.logger.debug("setPosition: new position lat and lon is {}, {}".format(self.pos.lat, self.pos.lon));
     };
+
     this.getPlanetData = function(){
+        this.logger.debug("getPlanetData: Called.")
         this.socket.emit("get_planets", {kwargs: {pos: this.position, cb_info:{
             cb: "planetTracker.get_planets_cb"
         }}})
     }
-    // Callbacks
+
     this.setupPlanets = function(){
         this.planetsSetup = true ;
-        this.logger.debug("setupPlanets: Called.")
         this.logger.debug("setupPlanets: First element of this.planetData: {}, ({}, {})".format(
             this.planetData[0].name,
             this.planetData[0].sameDayPos[0].cx,
             this.planetData[0].sameDayPos[0].cy
         ));
         for (var i=0; i<this.planetData.length; i++){
-            var planetGroup = this.dynamicGroup.append('g');
+            var planetGroup = this.dynamicGroup.append('g')
+                .attr("class", this.planetData[i].name)
             var planet = new D3Planet(this, planetGroup, this.planetData[i]);
             planet.setup();
             this.planets[i] = planet ;
@@ -107,18 +108,25 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
     }
 
     this.updatePlanets = function(){
+        this.logger.debug("updatePlanets: Called.")
         var planet ;
-        this.logger.debug1("updatePlanets: Called. this.planetData: {}".format(this.planetData[0].sameDayPos[0].cx))
+        // this.logger.debug("updatePlanets: Called. this.planetData: {}".format(this.planetData[0].sameDayPos[0].cx))
         for (var i=0; i<this.planetData.length; i++){
             planet = self.planets[i]
             planet.update(planet)(this.planetData[i]);
         }
     };
 
+    this.updatePlot = function(dim){
+        this.logger.debug("updatePlot: Called.")
+        this.setupPolarPlot(dim);
+        if (this.planetData){
+            this.updatePlanetData(this.planetData, this.setupPlanets.bind(this))
+        }
+    }
 
     this.update = function(){
-        this.logger.debug1("PlanetTracker.update: Called.")
-        this.logger.debug1("PlanetTracker.update: Position: {}".format(this.position));
+        this.logger.debug("PlanetTracker.update: Called.")
         this.getPlanetData();
     }
 
@@ -158,6 +166,7 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
             d.planetColor = planetColor;
             d.strokeWidth = strokeWidth;
         });
+
         if (callbacks.constructor === Array){
             callbacks.forEach(function(cb){
                 cb();
