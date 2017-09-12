@@ -34,8 +34,6 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
         this.setupSocket();
         this.setupPolarPlot();
         this.getPlanetData();
-        // this.updatePlanetData(self)(this.planetData);
-        // this.createPlanets();
     }
 
     this.setupSocket = function(){
@@ -43,9 +41,9 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
         this.socket.on("planetTracker.get_planets_cb", function(data){
             self.logger.debug("planetTracker.get_planets_cb: Called.")
             if (! self.planetsSetup){
-                self.updatePlanetData(self)(data, self.setupPlanets.bind(self))
+                self.updatePlanetData.bind(self)(data, self.setupPlanets.bind(self))
             } else {
-                self.updatePlanetData(self)(data, self.updatePlanets.bind(self))
+                self.updatePlanetData.bind(self)(data, self.updatePlanets.bind(self))
             }
         })
     }
@@ -118,53 +116,54 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
     };
 
 
-    this.update = function(self){
-        return function(){
-            self.logger.debug1("PlanetTracker.update: Called.")
-            self.logger.debug1("PlanetTracker.update: Position: {}".format(self.position));
-            self.getPlanetData();
-        };
-    };
+    this.update = function(){
+        this.logger.debug1("PlanetTracker.update: Called.")
+        this.logger.debug1("PlanetTracker.update: Position: {}".format(this.position));
+        this.getPlanetData();
+    }
 
-    this.updatePlanetData = function(self){
-        return function(data, cb){
-            self.logger.debug("updatePlanetData: Called.");
-            self.logger.debug(`updatePlanetData: ${self.rad}`);
-            var planetColor ;
-            var strokeWidth ;
-
-            self.planetData = data ;
-            self.planetData.forEach(function(d, i){
-                d.r = d.size * parseInt((self.rad)/ 50., 10);
-                d.sameDayPos.forEach(function(di){
-                    di.az = di[0];
-                    di.alt = di[1];
-                    di.radialPos = (self.rad*((Math.PI/2.0)-Math.abs(di.alt)))/(Math.PI/2.0);
-                    di.az_adj = di.az - Math.PI/2.0 ;
-                    di.cx = "{:.4f}".format(di.radialPos*Math.cos(di.az_adj))
-                    di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
-                })
-                d.sameTimePos.forEach(function(di){
-                    di.az = di[0];
-                    di.alt = di[1];
-                    di.radialPos = (self.rad*((Math.PI/2.0)-Math.abs(di.alt)))/(Math.PI/2.0);
-                    di.az_adj = di.az - Math.PI/2.0 ;
-                    di.cx = "{:.4f}".format(di.radialPos*Math.cos(di.az_adj))
-                    di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
-                    di.r = d.r
-                })
-                self.logger.debug1("{}: {}".format(d.name, self.alphaMapper(d.magnitude)));
-                if (d.sameDayPos[0].alt >= 0){
-                    planetColor = d.color.format(self.alphaMapper(d.magnitude));
-                    strokeWidth = 0 ;
-                }else{
-                    planetColor = d.color.format(0.0);
-                    strokeWidth = 1 ;
-                }
-                d.planetColor = planetColor;
-                d.strokeWidth = strokeWidth;
-            });
-            cb()
-        };
+    this.updatePlanetData = function(data, callbacks){
+        var self = this;
+        self.logger.debug("updatePlanetData: Called.");
+        var planetColor ;
+        var strokeWidth ;
+        self.planetData = data ;
+        self.planetData.forEach(function(d, i){
+            d.r = d.size * parseInt((self.rad)/ 50., 10);
+            d.sameDayPos.forEach(function(di){
+                di.az = di[0];
+                di.alt = di[1];
+                di.radialPos = (self.rad*((Math.PI/2.0)-Math.abs(di.alt)))/(Math.PI/2.0);
+                di.az_adj = di.az - Math.PI/2.0 ;
+                di.cx = "{:.4f}".format(di.radialPos*Math.cos(di.az_adj))
+                di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
+            })
+            d.sameTimePos.forEach(function(di){
+                di.az = di[0];
+                di.alt = di[1];
+                di.radialPos = (self.rad*((Math.PI/2.0)-Math.abs(di.alt)))/(Math.PI/2.0);
+                di.az_adj = di.az - Math.PI/2.0 ;
+                di.cx = "{:.4f}".format(di.radialPos*Math.cos(di.az_adj))
+                di.cy = "{:.4f}".format(di.radialPos*Math.sin(di.az_adj))
+                di.r = d.r
+            })
+            self.logger.debug1("{}: {}".format(d.name, self.alphaMapper(d.magnitude)));
+            if (d.sameDayPos[0].alt >= 0){
+                planetColor = d.color.format(self.alphaMapper(d.magnitude));
+                strokeWidth = 0 ;
+            }else{
+                planetColor = d.color.format(0.0);
+                strokeWidth = 1 ;
+            }
+            d.planetColor = planetColor;
+            d.strokeWidth = strokeWidth;
+        });
+        if (callbacks.constructor === Array){
+            callbacks.forEach(function(cb){
+                cb();
+            })
+        }else{
+            callbacks();
+        }
     }
 }

@@ -136,7 +136,7 @@ function App(socket, updateRate, logLevel){
 
     this.setup = function(){
         this.setupAbout() ;
-        this.getPosition([this.setPosition.bind(this), this.setupPlanetTracker.bind(this)]) ;
+        this.getPosition([this.setPosition.bind(this), this.setupPlanetTracker.bind(this)]);
     }
 
     this.calculatePlotHeight = function(){
