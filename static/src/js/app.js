@@ -72,21 +72,27 @@ function App(socket, updateRate, logLevel){
     //         self.planetTracker.update(self.planetTracker)() ;
     //     };
     // };
+    this.updateAbout = function(){
+        this.logger.debug("updateAbout: Called.")
+        var aboutToolTip = d3.select("#about-tooltip");
+        aboutToolTip.style("width", d3.select("#planet-plot").style('width'))
+
+    }
 
     this.setupAbout =  function(){
         var self = this ;
         var aboutHTML = `
         <h6>Hover the mouse over objects to see
         their name, current position in the sky, and approximate setting time.<br>
-        Hovering will also show the position of the object at the same time for the next 2 weeks.<br>
         Setting times are displayed in UTC time.<br>
         Objects that are just outlines are below the horizon.</h6>
         `
         self.aboutTooltipDiv = d3.select("#title-bar").append("div")
+            .attr("id","about-tooltip")
             .attr("class", "tooltip")
             .style("opacity", 0.0)
-        //    .style("background", "rgba(200,200,200,1.0)")
-            .style("background","rgba(255,255,255,1.0)")
+            .style("background","rgb(255,255,255)")
+            .style("fill","rgb(255,255,255)")
             .style("width", d3.select("#planet-plot").style('width'))
             .style("max-height", "500px")
             .html(aboutHTML)
@@ -96,7 +102,7 @@ function App(socket, updateRate, logLevel){
         aboutDiv.mouseover(function(){
             self.aboutTooltipDiv.transition()
                 .duration(200)
-                .style("opacity", .9);
+                .style("opacity", 1)
             $("#about h4").css("color", "#ce0e25")
         }) ;
 
@@ -131,6 +137,7 @@ function App(socket, updateRate, logLevel){
                 width: $("#planet-plot").width(),
                 height: self.calculatePlotHeight()
             })
+            self.updateAbout();
         });
     }
 

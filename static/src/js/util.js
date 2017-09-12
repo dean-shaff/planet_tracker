@@ -30,3 +30,8 @@ var util = {
             return (180.*radian)/(Math.PI)
     }
 }
+d3.selection.prototype.moveToFront = function() {
+      return this.each(function(){
+        this.parentNode.appendChild(this);
+      });
+    };

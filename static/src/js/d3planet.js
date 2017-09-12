@@ -16,7 +16,7 @@ function D3Planet(parent, bindElement, data){
     this.sameDayPath = null ;
     this.planetToolTip = d3.select(this.parent.bindElement).append("div")
                             .attr("class", "tooltip")
-                            .style("opacity",1.0)
+                            .style("opacity",0)
 
     this.planetDataLineGenerator = d3.line()
                                     .x(function(d){return d.cx})
