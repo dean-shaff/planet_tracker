@@ -102,8 +102,8 @@ function D3Planet(parent, bindElement, data){
             self.parent.logger.debug1("planetTracker.mouseOverCallback: Calculated Position: {}, {}".format(divX, divY));
             self.planetToolTip.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg<br/>{}".format(
                                 self.data.name,
-                                self.parent.toDegree(self.data.sameDayPos[0].az),
-                                self.parent.toDegree(self.data.sameDayPos[0].alt),
+                                util.toDegree(self.data.sameDayPos[0].az),
+                                util.toDegree(self.data.sameDayPos[0].alt),
                                 self.data.setting_time))
                 .style("transform","translate({}px,{}px)".format(divX.toFixed(1),divY.toFixed(1)))
                 .style("background", "rgba(100,100,100,0.2)") ;

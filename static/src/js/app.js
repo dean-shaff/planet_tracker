@@ -17,11 +17,6 @@ function App(socket, updateRate, logLevel){
         this.socket = socket ;
     }
     this.setupSocket = function(socket){
-        var self = this ;
-        // this.socket.on("get_planets_cb", function(data){
-        //     console.log("get_planets_cb: Called.")
-        //     self.setup(self)(data);
-        // })
     }
 
     this.getPosition = function(callbacks){
@@ -115,12 +110,15 @@ function App(socket, updateRate, logLevel){
     }
 
     this.setPosition =function(position){
-        this.position = position ;
-        this.logger.debug("setPosition: new position lat and lon is {}, {}".format(this.position.lat, this.position.lon));
+        if (position){
+            this.position = position ;
+            this.logger.debug("setPosition: new position lat and lon is {}, {}".format(this.position.lat, this.position.lon));
+        } else {
+            this.logger.error("setPosition: position is undefined.")
+        }
     };
 
     this.setupPlanetTracker = function(position){
-        this.position = position ;
         this.planetTracker = new PlanetTracker(this.socket, "#planet-plot",
                                                     $("#planet-plot").width(),
                                                     this.calculatePlotHeight(),
