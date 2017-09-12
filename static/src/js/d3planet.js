@@ -47,6 +47,8 @@ function D3Planet(parent, bindElement, data){
             .style('fill',this.data.planetColor)
             .attr('stroke', "rgba(0,0,0,0.2)")
             .attr('stroke-width',this.data.strokeWidth)
+            // .on('mouseover', this.mouseOverCallback(this))
+            // .on('mouseout', this.mouseOutCallback(this))
         if (! this.parent.mobile) {
             this.planetCircle
                 .on('mouseover', this.mouseOverCallback(this))
@@ -111,9 +113,9 @@ function D3Planet(parent, bindElement, data){
         return function(){
             clicked = ! clicked ;
             if (clicked){
-                self.mouseOverCallback(self)()
+                self.mouseOverCallback(self).bind(this)()
             } else {
-                self.mouseOutCallback(self)()
+                self.mouseOutCallback(self).bind(this)()
             }
         }
     }
