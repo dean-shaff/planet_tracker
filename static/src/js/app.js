@@ -1,10 +1,15 @@
-function App(socket, updateRate, logLevel){
+function App(socket, updateRate, logLevel, mobile){
 
     this.socket = socket ;
     this.updateRate = updateRate ;
     this.radius = null ;
     this.position = {};
     this.logger = new Logger("App", logLevel);
+    if (mobile){
+        this.mobile = mobile
+    } else {
+        this.mobile = false ;
+    }
 
     this.init = function() {
         var self = this;
@@ -81,6 +86,7 @@ function App(socket, updateRate, logLevel){
 
     this.setupAbout =  function(){
         var self = this ;
+        // ${navigator.userAgent}, ${this.mobile}<br>
         var aboutHTML = `
         <h6>Hover the mouse over objects to see
         their name, current position in the sky, and approximate setting time.<br>
@@ -99,19 +105,25 @@ function App(socket, updateRate, logLevel){
             .style('transform', 'translate({}px,{})'.format(0,d3.select("#title").style('height')))
 
         var aboutDiv = $("#about") ;
-        aboutDiv.mouseover(function(){
-            self.aboutTooltipDiv.transition()
-                .duration(200)
-                .style("opacity", 1)
-            $("#about h4").css("color", "#ce0e25")
-        }) ;
+        var clicked = false ;
+        aboutDiv.on("click", function(){
+            clicked = ! clicked ;
+            if (clicked){
+                self.aboutTooltipDiv.transition()
+                    .duration(200)
+                    .style("opacity", 1)
+                $("#about h4").css("color", "#ce0e25")
+            } else {
+                self.aboutTooltipDiv.transition()
+                    .duration(200)
+                    .style("opacity", 0);
+                $("#about h4").css("color", "#222")
+            }
+        });
 
-        aboutDiv.mouseout(function(){
-            self.aboutTooltipDiv.transition()
-                .duration(200)
-                .style("opacity", 0);
-            $("#about h4").css("color", "#222")
-        }) ;
+        // aboutDiv.on(function(){
+        //
+        // }) ;
 
     }
 
@@ -128,7 +140,7 @@ function App(socket, updateRate, logLevel){
         this.planetTracker = new PlanetTracker(this.socket, "#planet-plot",
                                                     $("#planet-plot").width(),
                                                     this.calculatePlotHeight(),
-                                                    position, this.logger.level);
+                                                    position, this.logger.level, this.mobile);
         this.planetTracker.setup() ;
         var self = this ;
         $(window).on("resize", function(){
@@ -153,11 +165,15 @@ function App(socket, updateRate, logLevel){
 
 $(document).ready(function(){
     logging.setLevel(logging.levels.DEBUG);
+    var mobile = false ;
+    if (/Mobi/.test(navigator.userAgent)) {
+        mobile = true ;
+    }
     var app ;
     var port = location.port;
     var domain = document.domain;
     var socket = io.connect("http://{}:{}".format(domain, port));
-    app = new App(socket, 5000, logging.levels.DEBUG) ;
+    app = new App(socket, 5000, logging.levels.DEBUG, mobile) ;
     socket.on('connect', function(){
         console.info("Updating App's socket connection");
         app.updateSocket(socket);

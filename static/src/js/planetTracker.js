@@ -1,9 +1,10 @@
-function PlanetTracker(socket, bindElement, width, height, position, logLevel) {
+function PlanetTracker(socket, bindElement, width, height, position, logLevel, mobile) {
 
     this.socket = socket;
     this.bindElement = bindElement ;
     this.width = width ;
     this.height = height ;
+    this.mobile = mobile
     if (! position){
         // Even if we don't supply position, make sure it defaults to somewhere.
         // In this case, Abu Dhabi, UAE.

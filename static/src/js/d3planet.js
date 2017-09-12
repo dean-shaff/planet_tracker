@@ -39,25 +39,30 @@ function D3Planet(parent, bindElement, data){
         //     .attr('d', this.planetDataLineGenerator(this.data.sameDayPos))
 
         // Create the planet circle
-        if (this.data){
-            this.planetCircle = this.planetGroup.append("circle")
-                .attr('cx',this.data.sameDayPos[0].cx)
-                .attr('cy',this.data.sameDayPos[0].cy)
-                .attr('r', this.data.r)
-                .style('fill',this.data.planetColor)
-                .attr('stroke', "rgba(0,0,0,0.2)")
-                .attr('stroke-width',this.data.strokeWidth)
+        // if (this.data){
+        this.planetCircle = this.planetGroup.append("circle")
+            .attr('cx',this.data.sameDayPos[0].cx)
+            .attr('cy',this.data.sameDayPos[0].cy)
+            .attr('r', this.data.r)
+            .style('fill',this.data.planetColor)
+            .attr('stroke', "rgba(0,0,0,0.2)")
+            .attr('stroke-width',this.data.strokeWidth)
+        if (! this.parent.mobile) {
+            this.planetCircle
                 .on('mouseover', this.mouseOverCallback(this))
                 .on('mouseout', this.mouseOutCallback(this))
         } else {
-            this.planetCircle = this.planetGroup.append("circle")
-                .attr('cx',0.0)
-                .attr('cy',0.0)
-                .attr('r', 0.0)
-                .style('fill',"rgba(0,0,0)")
-                .attr('stroke', "rgba(0,0,0,0.2)")
-                .attr('stroke-width',0.0)
+            this.planetCircle.on('click', this.mouseClick(this));
         }
+        // } else {
+        //     this.planetCircle = this.planetGroup.append("circle")
+        //         .attr('cx',0.0)
+        //         .attr('cy',0.0)
+        //         .attr('r', 0.0)
+        //         .style('fill',"rgba(0,0,0)")
+        //         .attr('stroke', "rgba(0,0,0,0.2)")
+        //         .attr('stroke-width',0.0)
+        // }
 
     }
 
@@ -101,13 +106,27 @@ function D3Planet(parent, bindElement, data){
         };
     }
 
+    this.mouseClick = function(self){
+        var clicked = false;
+        return function(){
+            clicked = ! clicked ;
+            if (clicked){
+                self.mouseOverCallback(self)()
+            } else {
+                self.mouseOutCallback(self)()
+            }
+        }
+    }
+
     this.mouseOverCallback = function(self){
         return function(){
             self.parent.logger.debug("mouseOverCallback: Called.")
             self.planetHovering = true ;
             self.planetToolTip.transition()
                 .duration(self.parent.hoverTransition)
-                .style("opacity", .9);
+                .style("opacity", .9)
+                // .style("width", "70px")
+            self.planetToolTip.moveToFront()
 
             var divWidth = parseInt(self.planetToolTip.style('width'), 10);
             var divHeight = parseInt(self.planetToolTip.style('max-height'), 10);
@@ -160,7 +179,9 @@ function D3Planet(parent, bindElement, data){
 
             self.planetToolTip.transition()
                 .duration(self.hoverTransition)
-                .style("opacity", 0);
+                .style("opacity", 0)
+                // .style("width", 0)
+            self.planetToolTip.moveToBack()
 
             d3.select(this)
                 .transition()
