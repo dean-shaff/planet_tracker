@@ -190,8 +190,8 @@ function PlanetTracker(parent, socket, plotBindElement, listBindElement, width, 
     this.updatePlanetList = function(){
         var self = this ;
         this.planetData.forEach(function(d){
-            $(`#${d.name} > #az`).html(`${util.toDegree(d.sameDayPos[0].az).toFixed(2)}`);
-            $(`#${d.name} > #alt`).html(`${util.toDegree(d.sameDayPos[0].alt).toFixed(2)}`);
+            $(`#${d.name} > #az`).html(`${util.toDegree(d.sameDayPos[0].az).toFixed(2)+"°"}`);
+            $(`#${d.name} > #alt`).html(`${util.toDegree(d.sameDayPos[0].alt).toFixed(2)+"°"}`);
             $(`#${d.name} > #setting-time`).html(`${d.setting_time}`);
         })
     }
@@ -200,23 +200,34 @@ function PlanetTracker(parent, socket, plotBindElement, listBindElement, width, 
         var self = this;
         this.logger.debug("setupPlanetList: Called.")
         this.planetData.forEach(function(d){
+            $(self.listBindElement).append(`<tbody>
+                                                <tr id='${d.name}'>
+                                                    <th>${d.name}</th>
+                                                    <td id='az'>${util.toDegree(d.sameDayPos[0].az).toFixed(2)+"°"}</td>
+                                                    <td id='alt'>${util.toDegree(d.sameDayPos[0].alt).toFixed(2)+"°"}</td>
+                                                    <td id='setting-time'>${d.setting_time}</td>
+                                                </tr>
+                                            </tbody>`)
             // $(self.listBindElement).append(`<tbody>
             //                                     <tr id='${d.name}'>
             //                                         <th>${d.name}</th>
-            //                                         <td id='az'>${util.toDegree(d.sameDayPos[0].az).toFixed(2)}</td>
-            //                                         <td id='alt'>${util.toDegree(d.sameDayPos[0].alt).toFixed(2)}</td>
-            //                                         <td id='setting-time'>${d.setting_time}</td>
             //                                     </tr>
             //                                 </tbody>`)
-            //
-            $(self.listBindElement).append(`<button id='${d.name}' class='u-full-width'>${d.name}</button>`)
+            // $(self.listBindElement).append(`<div id='${d.name}'><p>${d.name}</p></div>`)
+            // $(self.listBindElement).append(`<button id='${d.name}' class='u-full-width'>${d.name}</button>`)
         })
-        $(self.listBindElement).on("click", "button", function(){
+        $(self.listBindElement).on("click", "tr", function(){
             var name = $(this).attr("id");
+            var thElement = $(this).find("th")
             self.planets.forEach(function(d){
                 if (d.name == name){
                     self.logger.debug(`Clicking on table element for planet ${d.name}`);
                     d.mouseClick(d)();
+                    if (d.clicked){
+                        thElement.css("color","#ce0e25")
+                    } else {
+                        thElement.css("color","#222")
+                    }
                 }
             })
         })
