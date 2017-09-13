@@ -2,19 +2,22 @@ function D3Planet(parent, bindElement, data){
 
     this.parent = parent
     this.planetHovering = false ;
+    this.clicked = false ;
     this.bindElement = bindElement ;
     this.planetGroup = bindElement.append('g');
     if (data){
         this.data = data ;
         this.planetColor = this.data.planetColor;
+        this.name = this.data.name
     } else {
         this.data = null ;
         this.planetColor = null ;
+        this.name = "";
     }
     this.planetCircle = null;
     this.sameTimeCircles = null ;
     this.sameDayPath = null ;
-    this.planetToolTip = d3.select(this.parent.bindElement).append("div")
+    this.planetToolTip = d3.select(this.parent.plotBindElement).append("div")
                             .attr("class", "tooltip")
                             .style("opacity",0)
 
@@ -23,49 +26,7 @@ function D3Planet(parent, bindElement, data){
                                     .y(function(d){return d.cy})
 
     this.setup = function(){
-        // Create the sameTimeCircles (the position of the planet at the same time on future days)
-        // var circleGroup = this.bindElement.selectAll('circle').data(this.data.sameTimePos)
-        // this.sameTimeCircles = circleGroup.enter().append('circle')
-        //     .attr('cx', function(d){return d.cx})
-        //     .attr('cy', function(d){return d.cy})
-        //     .attr('r', function(d){return 0.3*d.r})
-        //     .style('fill', this.parent.black.format(0.0))
-
-        // Create the sameDayPath (the postion of the planet before sunrise)
-        // this.sameDayPath = this.bindElement.append('path')
-        //     .style('stroke', this.parent.black.format(0.0))
-        //     .style('stroke-width',2)
-        //     .attr('fill',"none")
-        //     .attr('d', this.planetDataLineGenerator(this.data.sameDayPos))
-
-        // Create the planet circle
-        // if (this.data){
-        this.planetCircle = this.planetGroup.append("circle")
-            .attr('cx',this.data.sameDayPos[0].cx)
-            .attr('cy',this.data.sameDayPos[0].cy)
-            .attr('r', this.data.r)
-            .style('fill',this.data.planetColor)
-            .attr('stroke', "rgba(0,0,0,0.2)")
-            .attr('stroke-width',this.data.strokeWidth)
-            // .on('mouseover', this.mouseOverCallback(this))
-            // .on('mouseout', this.mouseOutCallback(this))
-        if (! this.parent.mobile) {
-            this.planetCircle
-                .on('mouseover', this.mouseOverCallback(this))
-                .on('mouseout', this.mouseOutCallback(this))
-        } else {
-            this.planetCircle.on('click', this.mouseClick(this));
-        }
-        // } else {
-        //     this.planetCircle = this.planetGroup.append("circle")
-        //         .attr('cx',0.0)
-        //         .attr('cy',0.0)
-        //         .attr('r', 0.0)
-        //         .style('fill',"rgba(0,0,0)")
-        //         .attr('stroke', "rgba(0,0,0,0.2)")
-        //         .attr('stroke-width',0.0)
-        // }
-
+        this.planetCircle = this.setPlanetCircleAttributes(this.planetGroup.append("circle"));
     }
 
     this.update = function(self){
@@ -79,40 +40,14 @@ function D3Planet(parent, bindElement, data){
             }else{
                 planetStrokeWidth = self.data.strokeWidth;
             }
-
-            // Update the sameTimeCircles (the position of the planet at the same time on future days)
-            var circleGroup = self.bindElement.selectAll('circle').data(self.data.sameTimePos)
-            circleGroup.exit().remove();
-            circleGroup.merge(circleGroup)
-                .attr('cx', function(d){return d.cx})
-                .attr('cy', function(d){return d.cy})
-                .attr('r', function(d){return 0.3*d.r})
-                .style('fill',self.parent.black.format(opacity));
-
-            self.planetCircle
-                .attr('cx',self.data.sameDayPos[0].cx)
-                .attr('cy',self.data.sameDayPos[0].cy)
-                .attr('r', self.data.r)
-                .style('fill',self.data.planetColor)
-                .style('opacity',1.0)
-                .attr('stroke', self.parent.black.format(0.2))
-                .attr('stroke-width',planetStrokeWidth)
-                .on('mouseover', self.mouseOverCallback(self))
-                .on('mouseout', self.mouseOutCallback(self));
-
-            // self.sameDayPath
-            //     .style('stroke', self.parent.black.format(strokeAlpha))
-            //     .style('stroke-width',2)
-            //     .attr('fill',"none")
-            //     .attr('d', self.planetDataLineGenerator(self.data.sameDayPos))
+            self.setPlanetCircleAttributes(self.planetCircle)
         };
     }
 
     this.mouseClick = function(self){
-        var clicked = false;
         return function(){
-            clicked = ! clicked ;
-            if (clicked){
+            self.clicked = ! self.clicked ;
+            if (self.clicked){
                 self.mouseOverCallback(self).bind(this)()
             } else {
                 self.mouseOutCallback(self).bind(this)()
@@ -123,6 +58,7 @@ function D3Planet(parent, bindElement, data){
     this.mouseOverCallback = function(self){
         return function(){
             self.parent.logger.debug("mouseOverCallback: Called.")
+            self.parent.logger.debug(`mouseOverCallback: ${this}`);
             self.planetHovering = true ;
             self.planetToolTip.transition()
                 .duration(self.parent.hoverTransition)
@@ -132,13 +68,20 @@ function D3Planet(parent, bindElement, data){
 
             var divWidth = parseInt(self.planetToolTip.style('width'), 10);
             var divHeight = parseInt(self.planetToolTip.style('max-height'), 10);
-            var parentDivWidth = $(self.parent.bindElement).width();
-            var parentDivHeight = $(self.parent.bindElement).height();
+            var parentDivWidth = $(self.parent.plotBindElement).width();
+            var parentDivHeight = $(self.parent.plotBindElement).height();
             var divPadding = 10 ;
+
+            // var polarPlotTransform = d3.select("#polar-plot g").attr("transform");
+
+            // var divX = parseFloat(self.data.sameDayPos[0].cx + self.parent.polarPlotTransform.x , 10) ;
+            // var divY = parseFloat(self.data.sameDayPos[0].cy + self.parent.polarPlotTransform.y, 10) ;
+
             var divX = parseFloat(parseFloat(self.data.sameDayPos[0].cx) + parentDivWidth/2 - divWidth/2 - divPadding/2, 10);
-            var divY = parseFloat(parseFloat(self.data.sameDayPos[0].cy) - parentDivHeight/2 - divHeight - self.data.r - divPadding*2, 10);
+            var divY = parseFloat(parseFloat(self.data.sameDayPos[0].cy) - parentDivHeight + self.parent.rad - divHeight - self.data.r, 10);
+
             self.parent.logger.debug(`mouseOverCallback: width: ${self.parent.width}, height: ${self.parent.height}`)
-            self.parent.logger.debug(`mouseOverCallback: width: ${parentDivWidth}, height: ${parentDivHeight}`)
+            self.parent.logger.debug(`mouseOverCallback: width: ${parentDivWidth}, height: ${parentDivHeight}, rad: ${self.parent.rad}`)
             self.parent.logger.debug("mouseOverCallback: Calculated Position: {}, {}".format(divX, divY));
             self.planetToolTip.html("<b>{}</b><br/>{:.4f}&deg; {:.4f}&deg<br/>{}".format(
                                 self.data.name,
@@ -148,26 +91,14 @@ function D3Planet(parent, bindElement, data){
                 .style("transform","translate({}px,{}px)".format(divX.toFixed(1),divY.toFixed(1)))
                 .style("background", "rgba(100,100,100,0.2)") ;
 
-            self.parent.logger.debug1("translate({}px,{}px)".format(divX.toFixed(1),-divY.toFixed(1)))
+            self.parent.logger.debug("mouseOverCallback: translate({}px,{}px)".format(divX.toFixed(1),-divY.toFixed(1)))
             var toolTipX = parseFloat(self.planetToolTip.style('left'));
             var toolTipY = parseFloat(self.planetToolTip.style('top'));
-            self.parent.logger.debug1("planetTracker.mouseOverCallback: Actual position {}, {}".format(toolTipX, toolTipY));
-            // This transitions the actual planet Circle.
-            d3.select(this)
+            self.parent.logger.debug("mouseOverCallback: Actual position {}, {}".format(toolTipX, toolTipY));
+            self.planetCircle
                 .transition()
                 .duration(self.parent.hoverTransition)
                 .attr('stroke-width', 2)
-
-            // self.sameTimeCircles
-            //     .transition()
-            //     .duration(self.parent.hoverTransition)
-            //     .style('fill', self.parent.black.format(0.2))
-                // .style('opacity',0.2)
-            // self.sameDayPath
-            //     .transition()
-            //     .duration(self.parent.hoverTransition)
-            //     .style('stroke', self.parent.black.format(0.2))
-
         }
     }
 
@@ -185,27 +116,30 @@ function D3Planet(parent, bindElement, data){
                 // .style("width", 0)
             self.planetToolTip.moveToBack()
 
-            d3.select(this)
+            self.planetCircle
                 .transition()
                 .duration(self.parent.hoverTransition)
-        //        .style('fill', self.data.planetColor)
                 .attr('stroke-width', self.data.strokeWidth);
 
-            // self.sameTimeCircles
-            //     .transition()
-            //     .duration(self.parent.hoverTransition)
-            //     .style('fill', self.parent.black.format(0.0))
-            // self.sameDayPath
-            //     .transition()
-            //     .duration(self.parent.hoverTransition)
-            //     .style('stroke', self.parent.black.format(0.0))
-
             self.parent.logger.debug("Took {:.2f} seconds".format(performance.now() - time))
-            // d3.select(this.parentNode).selectAll('path')
-            //     .transition()
-            //     .duration(self.hoverTransition)
-            //     .style("stroke", function(di, ind){return self.black.format(0.0)});
         }
-    }
+    };
 
+    this.setPlanetCircleAttributes = function(planetCircle){
+        planetCircle
+            .attr('cx',this.data.sameDayPos[0].cx)
+            .attr('cy',this.data.sameDayPos[0].cy)
+            .attr('r', this.data.r)
+            .style('fill',this.data.planetColor)
+            .attr('stroke', "rgba(0,0,0,0.2)")
+            .attr('stroke-width',this.data.strokeWidth)
+        if (! this.parent.mobile) {
+            planetCircle
+                .on('mouseover', this.mouseOverCallback(this))
+                .on('mouseout', this.mouseOutCallback(this))
+        } else {
+            planetCircle.on('click', this.mouseClick(this));
+        }
+        return planetCircle;
+    }
 }

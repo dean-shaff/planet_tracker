@@ -16,10 +16,14 @@ function App(socket, updateRate, logLevel, mobile){
         this.logger.debug("init: Called");
         this.setupSocket();
         this.setup();
-        // this.timer = setInterval(this.update(self), this.updateRate);
     }
+
     this.updateSocket = function(socket){
+        this.logger.info("Updating socket info")
         this.socket = socket ;
+        if (this.planetTracker){
+            this.planetTracker.updateSocket(this.socket);
+        }
     }
     this.setupSocket = function(socket){
     }
@@ -63,24 +67,10 @@ function App(socket, updateRate, logLevel, mobile){
         } ;
     };
 
-    this.makeInitRequest = function(self){
-        return function(pos){
-            self.logger.debug("makeInitRequest: Called.")
-            self.socket.emit("get_planets", {kwargs: {pos: pos, cb_info:{
-                cb: "get_planets_cb"
-            }}})
-        };
-    };
-
-    // this.update = function(self){
-    //     return function(){
-    //         self.planetTracker.update(self.planetTracker)() ;
-    //     };
-    // };
     this.updateAbout = function(){
         this.logger.debug("updateAbout: Called.")
         var aboutToolTip = d3.select("#about-tooltip");
-        aboutToolTip.style("width", d3.select("#planet-plot").style('width'))
+        aboutToolTip.style("width", d3.select("#title-bar").style('width'))
 
     }
 
@@ -99,7 +89,7 @@ function App(socket, updateRate, logLevel, mobile){
             .style("opacity", 0.0)
             .style("background","rgb(255,255,255)")
             .style("fill","rgb(255,255,255)")
-            .style("width", d3.select("#planet-plot").style('width'))
+            .style("width", d3.select("#title-bar").style('width'))
             .style("max-height", "500px")
             .html(aboutHTML)
             .style('transform', 'translate({}px,{})'.format(0,d3.select("#title").style('height')))
@@ -120,24 +110,10 @@ function App(socket, updateRate, logLevel, mobile){
                 $("#about h4").css("color", "#222")
             }
         });
-
-        // aboutDiv.on(function(){
-        //
-        // }) ;
-
     }
 
-    this.setPosition =function(position){
-        if (position){
-            this.position = position ;
-            this.logger.debug("setPosition: new position lat and lon is {}, {}".format(this.position.lat, this.position.lon));
-        } else {
-            this.logger.error("setPosition: position is undefined.")
-        }
-    };
-
     this.setupPlanetTracker = function(position){
-        this.planetTracker = new PlanetTracker(this.socket, "#planet-plot",
+        this.planetTracker = new PlanetTracker(this, this.socket, "#planet-plot", "#planet-list",
                                                     $("#planet-plot").width(),
                                                     this.calculatePlotHeight(),
                                                     position, this.logger.level, this.mobile);
@@ -153,13 +129,32 @@ function App(socket, updateRate, logLevel, mobile){
         });
     }
 
+    this.update = function(){
+        this.planetTracker.update();
+    }
+
     this.setup = function(){
         this.setupAbout() ;
-        this.getPosition([this.setPosition.bind(this), this.setupPlanetTracker.bind(this)]);
+        this.getPosition([this.setPosition.bind(this),
+                          this.setupPlanetTracker.bind(this),
+                          this.startTimers.bind(this)]);
     }
 
     this.calculatePlotHeight = function(){
         return $(window).height() - $("#title-bar").height();
+    }
+
+    this.setPosition =function(position){
+        if (position){
+            this.position = position ;
+            this.logger.debug("setPosition: new position lat and lon is {}, {}".format(this.position.lat, this.position.lon));
+        } else {
+            this.logger.error("setPosition: position is undefined.")
+        }
+    };
+
+    this.startTimers = function(){
+        this.timer = setInterval(this.update.bind(this), this.updateRate);
     }
 }
 

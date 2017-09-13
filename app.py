@@ -46,6 +46,10 @@ def sign(n):
     elif n == 0:
         return 0
 
+# @socketio.on("start_publishing")
+# def start_publishing(self):
+
+
 @socketio.on("get_planets")
 def get_planets(data):
     """
@@ -119,7 +123,9 @@ def get_planets(data):
 
     app.logger.debug("Took {:.2f} seconds to compute planet positions".format(time.time() - t0))
     with app.test_request_context("/"):
+        app.logger.debug("Requested context");
         socketio.emit(cb, planet_list)
+        app.logger.debug("Fired callback");
     # return planet_list
 
 @app.route("/")
@@ -133,8 +139,8 @@ if __name__ == '__main__':
     sh = logging.StreamHandler(sys.stdout)
     sh.setFormatter(formatter)
     app.logger.addHandler(sh)
-    socketio.run(app, debug=True, host='10.224.44.158')
-    # socketio.run(app, debug=True, host='127.0.0.1')
+    # socketio.run(app, debug=True, host='10.224.44.158')
+    socketio.run(app, debug=True, host='127.0.0.1')
 
     # app.run(debug=True, host='127.0.0.1', port=5001, threaded=True)
     # app.run(debug=True, host='10.224.44.158', port=5001, threaded=True)

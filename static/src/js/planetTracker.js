@@ -1,7 +1,9 @@
-function PlanetTracker(socket, bindElement, width, height, position, logLevel, mobile) {
+function PlanetTracker(parent, socket, plotBindElement, listBindElement, width, height, position, logLevel, mobile) {
 
+    this.parent = parent ;
     this.socket = socket;
-    this.bindElement = bindElement ;
+    this.plotBindElement = plotBindElement ;
+    this.listBindElement = listBindElement ;
     this.width = width ;
     this.height = height ;
     this.mobile = mobile
@@ -21,6 +23,7 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel, m
     }
     this.logger = new Logger("PlanetTracker", logLevel);
     this.polarPlot = null ;
+    this.polarPlotTransform = {x:0, y:0};
     this.planetData = null;
     this.rad = 0 ;
     this.planetsSetup = false ;
@@ -29,6 +32,7 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel, m
     this.hoverTransition = 300 ;
     this.planets = [];
     this.alphaMapper = util.mapRange(7, -27, 0.1, 1);
+    this.timer = null ;
 
     this.setup = function(){
         this.setupSocket();
@@ -41,11 +45,15 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel, m
         this.socket.on("planetTracker.get_planets_cb", function(data){
             self.logger.debug("planetTracker.get_planets_cb: Called.")
             if (! self.planetsSetup){
-                self.updatePlanetData.bind(self)(data, self.setupPlanets.bind(self))
+                self.updatePlanetData.bind(self)(data, [self.setupPlanets.bind(self), self.setupPlanetList.bind(self)])
             } else {
-                self.updatePlanetData.bind(self)(data, self.updatePlanets.bind(self))
+                self.updatePlanetData.bind(self)(data, [self.updatePlanets.bind(self), self.updatePlanetList.bind(self)])
             }
         })
+    }
+
+    this.updateSocket = function(socket){
+        this.socket = socket ;
     }
 
     this.setupPolarPlot = function(dim){
@@ -60,12 +68,15 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel, m
         }
         this.logger.debug("setupPolarPlot: Called.")
         this.rad = (Math.min(width, height) / 2) - 30;
-        d3.select(this.bindElement).html("")
-        this.svg = d3.select(this.bindElement).append("svg")
+        this.polarPlotTransform.x = width /2 ;
+        this.polarPlotTransform.y = this.rad + 20 ;
+        d3.select(this.plotBindElement).html("")
+        this.svg = d3.select(this.plotBindElement).append("svg")
+            .attr("id", "polar-plot")
             .attr("width", width)
             .attr("height", height)
             .append("g")
-            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            .attr("transform", `translate(${this.polarPlotTransform.x}, ${this.polarPlotTransform.y})`);
         this.staticGroup = this.svg.append("g");
         this.dynamicGroup = this.svg.append("g");
         this.polarPlotGroup = this.svg.append("g");
@@ -111,9 +122,8 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel, m
     this.updatePlanets = function(){
         this.logger.debug("updatePlanets: Called.")
         var planet ;
-        // this.logger.debug("updatePlanets: Called. this.planetData: {}".format(this.planetData[0].sameDayPos[0].cx))
         for (var i=0; i<this.planetData.length; i++){
-            planet = self.planets[i]
+            planet = this.planets[i]
             planet.update(planet)(this.planetData[i]);
         }
     };
@@ -176,4 +186,40 @@ function PlanetTracker(socket, bindElement, width, height, position, logLevel, m
             callbacks();
         }
     }
+
+    this.updatePlanetList = function(){
+        var self = this ;
+        this.planetData.forEach(function(d){
+            $(`#${d.name} > #az`).html(`${util.toDegree(d.sameDayPos[0].az).toFixed(2)}`);
+            $(`#${d.name} > #alt`).html(`${util.toDegree(d.sameDayPos[0].alt).toFixed(2)}`);
+            $(`#${d.name} > #setting-time`).html(`${d.setting_time}`);
+        })
+    }
+
+    this.setupPlanetList = function(){
+        var self = this;
+        this.logger.debug("setupPlanetList: Called.")
+        this.planetData.forEach(function(d){
+            // $(self.listBindElement).append(`<tbody>
+            //                                     <tr id='${d.name}'>
+            //                                         <th>${d.name}</th>
+            //                                         <td id='az'>${util.toDegree(d.sameDayPos[0].az).toFixed(2)}</td>
+            //                                         <td id='alt'>${util.toDegree(d.sameDayPos[0].alt).toFixed(2)}</td>
+            //                                         <td id='setting-time'>${d.setting_time}</td>
+            //                                     </tr>
+            //                                 </tbody>`)
+            //
+            $(self.listBindElement).append(`<button id='${d.name}' class='u-full-width'>${d.name}</button>`)
+        })
+        $(self.listBindElement).on("click", "button", function(){
+            var name = $(this).attr("id");
+            self.planets.forEach(function(d){
+                if (d.name == name){
+                    self.logger.debug(`Clicking on table element for planet ${d.name}`);
+                    d.mouseClick(d)();
+                }
+            })
+        })
+    }
+
 }
