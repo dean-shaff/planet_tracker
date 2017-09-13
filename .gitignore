@@ -1,5 +1,7 @@
 *.pyc
 .idea/
 *_deprecated*
+static/deprecated/
+.ipynb_checkpoints/
 *.ipynb
 *.zip
