@@ -67,7 +67,7 @@ function PolarPlotD3(extendGroup, rFunction, radius, kwargs){
             .style('fill', 'none')
             .attr('r', radius)
 
-        var tolerance = 15
+        var tolerance = 0
         var largeArc = d3.arc()
             .innerRadius(radius - tolerance)
             .outerRadius(radius + tolerance)

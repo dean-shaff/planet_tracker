@@ -8,12 +8,12 @@
     <!--Fonts-->
     <link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
     <!-- Styling -->
-    <link type="text/css" href="{{ url_for('static',filename='css/skeleton.css')}}" rel="stylesheet">
-    <link type="text/css" href="{{ url_for('static',filename='css/styles.css')}}" rel="stylesheet">
+    <link type="text/css" href="{{ url_for('static',filename='dep/css/Skeleton-2.0.4/css/normalize.css')}}" rel="stylesheet">
+    <link type="text/css" href="{{ url_for('static',filename='dep/css/Skeleton-2.0.4/css/skeleton.css')}}" rel="stylesheet">
+    <link type="text/css" href="{{ url_for('static',filename='src/css/styles.css')}}" rel="stylesheet">
 
     <script type=text/javascript>
 	  $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-
     </script>
 
 </head>
@@ -30,22 +30,36 @@
             <h4><a class="no-format" href="https://github.com/dean-shaff/planet_tracker">Source</a></h4>
         </div>
     </div>
-</div>
-<div class='container'>
-    <div class='row' id="planet-plot">
+    <div class='row'>
+        <div class='four columns'>
+            <table id="planet-list">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Az</th>
+                        <th>Alt</th>
+                        <th>Setting time (UTC)</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class='eight columns' id="planet-plot"></div>
     </div>
 </div>
 
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="https://d3js.org/d3.v4.min.js"></script>
-<script src="{{ url_for('static', filename='js/format.js')}}"></script>
-<script src="{{ url_for('static', filename='js/logging.js')}}"></script>
-<script src="{{ url_for('static', filename='js/polarPlotD3.js')}}"></script>
-<script src="{{ url_for('static', filename='js/d3planet.js')}}"></script>
-<script src="{{ url_for('static', filename='js/planetTracker.js')}}"></script>
-<script src="{{ url_for('static', filename='js/app.js')}}"></script>
-<!--<script src="{{ url_for('static', filename='js/planetTracker.js')}}"></script>-->
-<!--<script src="{{ url_for('static', filename='js/main_temp.js')}}"></script>-->
-<!-- <script src="{{ url_for('static', filename='js/main.js')}}"></script> -->
+
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script> -->
+<!-- <script src="https://d3js.org/d3.v4.min.js"></script> -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script> -->
+<script src="{{ url_for('static', filename='dep/js/jquery-3.2.1.js')}}"></script>
+<script src="{{ url_for('static', filename='dep/js/d3.min.js')}}"></script>
+<script src="{{ url_for('static', filename='dep/js/socket.io.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/format.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/logging.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/util.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/polarPlotD3.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/d3planet.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/planetTracker.js')}}"></script>
+<script src="{{ url_for('static', filename='src/js/app.js')}}"></script>
 
 </body>
