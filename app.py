@@ -161,6 +161,7 @@ class App(object):
 app = App().app
 
 if __name__ == '__main__':
+    app = App()
     app.app.logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(levelname)s-%(name)s-%(message)s")
     sh = logging.StreamHandler(sys.stdout)
