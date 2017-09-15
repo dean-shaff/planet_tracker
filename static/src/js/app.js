@@ -167,7 +167,7 @@ $(document).ready(function(){
     var app ;
     var port = location.port;
     var domain = document.domain;
-    var socket = io.connect("http://{}:{}".format(domain, port));
+    var socket = io.connect("https://{}:{}".format(domain, port));
     app = new App(socket, 5000, logging.levels.DEBUG, mobile) ;
     socket.on('connect', function(){
         console.info("Updating App's socket connection");
