@@ -1,11 +1,13 @@
 <template>
-<h1>Hey</h1>
+    <div>
+        <div class="is-size-1">Hey</div>
+        <a class="button">Button</a>
+    </div>
 </template>
 
 <script>
 
 export default {
-
 
 }
 </script>
