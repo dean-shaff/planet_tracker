@@ -5,3 +5,4 @@ static/deprecated/
 .ipynb_checkpoints/
 *.ipynb
 *.zip
+client/node_modules

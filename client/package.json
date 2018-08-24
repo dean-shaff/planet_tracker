@@ -1,0 +1,41 @@
+{
+  "name": "planet-tracker_client",
+  "version": "1.0.0",
+  "description": "Vue.js planet tracker client",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:dev": "./node_modules/.bin/webpack --config webpack.config.dev.js",
+    "build:prod": "./node_modules/.bin/webpack --config webpack.config.prod.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/dean-shaff/planet-tracker.git"
+  },
+  "author": "Dean Shaff",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dean-shaff/planet-tracker/issues"
+  },
+  "homepage": "https://github.com/dean-shaff/planet-tracker#readme",
+  "dependencies": {
+    "d3": "^5.6.0",
+    "socket.io": "^2.1.1",
+    "vue": "^2.5.17",
+    "bulma": "^0.7.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.5",
+    "babel-preset-es2015-node5": "^1.2.0",
+    "babel-preset-import-export": "^1.0.2",
+    "css-loader": "^1.0.0",
+    "mini-css-extract-plugin": "^0.4.2",
+    "null-loader": "^0.1.1",
+    "vue-loader": "^15.4.0",
+    "vue-style-loader": "^4.1.2",
+    "vue-template-compiler": "^2.5.17",
+    "webpack": "^4.17.1",
+    "webpack-command": "^0.4.1"
+  }
+}

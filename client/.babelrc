@@ -1,0 +1,6 @@
+{
+    "presets": [
+        "import-export",
+        "es2015-node5"
+    ]
+}
