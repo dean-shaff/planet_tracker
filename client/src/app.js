@@ -7,8 +7,14 @@ var init = ()=>{
         components:{
             "app":App
         },
+        data(){
+            return {
+                port: "5000",
+                host: "localhost"                
+            }
+        },
         el: "#main",
-        template:`<app ref="app"></app>`
+        template:`<app ref="app" :port="port" :host="host"></app>`
     })
     return app
 }
