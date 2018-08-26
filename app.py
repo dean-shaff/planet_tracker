@@ -101,6 +101,7 @@ class App(object):
             "el": astron_obj.alt,
             "ra": astron_obj.ra,
             "dec": astron_obj.dec,
+            "setting_time": str(self.observer.next_setting(astron_obj)),
             "when": when_str
         }
         cb_name = data["cb_name"]

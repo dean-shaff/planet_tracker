@@ -6,6 +6,7 @@
                 <td>Azimuth</td>
                 <td>Elevation</td>
                 <td>Magnitude</td>
+                <td>Setting Time</td>
             </thead>
             <tbody class="tbody">
                 <tr v-for="name in Object.keys(astronDisplayData)">
@@ -13,6 +14,7 @@
                     <td>{{astronDisplayData[name].az}}</td>
                     <td>{{astronDisplayData[name].el}}</td>
                     <td>{{astronDisplayData[name].magnitude}}</td>
+                    <td>{{astronDisplayData[name].setting_time}}</td>
                 </tr>
             </tbody>
         </table>
