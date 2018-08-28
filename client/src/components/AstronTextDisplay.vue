@@ -1,12 +1,12 @@
 <template>
     <div>
-        <table class="table is-fullwidth is-hoverable">
+        <table class="table is-hoverable">
             <thead>
                 <td>Name</td>
                 <td>Azimuth</td>
                 <td>Elevation</td>
                 <td>Magnitude</td>
-                <td>Setting Time</td>
+                <td>Setting Time (UTC)</td>
             </thead>
             <tbody class="tbody">
                 <tr v-for="name in Object.keys(astronDisplayData)">
@@ -32,20 +32,25 @@ export default {
     methods: {
         onClick(name){
             console.log(JSON.stringify(this.astronObjects[name]))
+        },
+        updateDisplayData(){
+            var displayData = {}
+            Object.keys(this.astronObjects).forEach((name)=>{
+                var displayObject = Object.assign({}, this.astronObjects[name])
+                this.formattableFields.forEach((field)=>{
+                    var fieldVal = displayObject[field]
+                    if (typeof fieldVal === "number"){
+                        displayObject[field] = util.radToDegree(fieldVal).toFixed(2)
+                    }
+                })
+                displayData[name] = displayObject
+            })
+            return displayData
         }
     },
     computed: {
-        astronDisplayData(){
-            var displayData = Object.assign({}, this.astronObjects)
-            Object.keys(displayData).forEach((name)=>{
-                this.formattableFields.forEach((field)=>{
-                    var fieldVal = displayData[name][field]
-                    if (typeof fieldVal === "number"){
-                        displayData[name][field] = util.radToDegree(fieldVal).toFixed(2)
-                    }
-                })
-            })
-            return displayData
+        astronDisplayData: function(){
+            return this.updateDisplayData()
         }
     },
     data(){

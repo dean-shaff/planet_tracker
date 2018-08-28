@@ -1,26 +1,38 @@
 <template>
 <div>
-    <div class="field is-horizontal field-body">
-        <div class="field">
+    <div class="field is-horizontal">
+        <div class="field-label ">
             <label class="label">Longitude</label>
-            <div class="control">
-                <input class="input" type="text" v-model="lon"/>
+        </div>
+        <div class="field field-body is-grouped">
+            <div class="control is-expanded ">
+                <input class="input " v-model="lon"/>
             </div>
         </div>
-        <div class="field">
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label ">
             <label class="label">Latitude</label>
-            <div class="control">
-                <input class="input" type="text" v-model="lat"/>
+        </div>
+        <div class="field field-body is-grouped">
+            <div class="control is-expanded">
+                <input class="input "v-model="lat"/>
             </div>
         </div>
-        <div class="field">
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label ">
             <label class="label">Elevation</label>
-            <div class="control">
-                <input class="input" type="text" v-model="elevation"/>
+        </div>
+        <div class="field field-body is-grouped">
+            <div class="control is-expanded">
+                <input class="input "v-model="elevation"/>
             </div>
         </div>
-        <div class="field">
-            <label class="label">&nbsp;</label>
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label"></div>
+        <div class="field-body">
             <div class="control">
                 <button class="button" @click="onClick">Get Ephemerides</button>
             </div>
@@ -62,4 +74,5 @@ export default {
 </script>
 
 <style scoped>
+
 </style>

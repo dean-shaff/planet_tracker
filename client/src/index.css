@@ -1,1 +1,5 @@
+.field-label {
+    flex-grow: 1.5;
+}
+
 @import "./../node_modules/bulma/css/bulma.css"

@@ -3,10 +3,12 @@
         <div class="columns">
             <div class="column is-one-quarter">
                 <time-display
+                    class="box"
                     :time="currentTime"
                     @on-change="onTimeChange">
                 </time-display>
                 <geo-location-display
+                    class="box"
                     :geoLocation="geoLocation"
                     @on-change="onGeoLocationChange">
                 </geo-location-display>
@@ -14,10 +16,14 @@
                     :astronObjects="astronObjects">
                 </astron-text-display>
             </div>
-            <d3-polar-plot
-                class="column"
-                :plotData="astronObjects">
-            </d3-polar-plot>
+            <div class="column" ref="polar-plot-container">
+                <d3-polar-plot
+                    :circles="astronPlotData"
+                    :width="polarPlotWidth"
+                    :height="polarPlotHeight"
+                    :key="polarPlotKey">
+                </d3-polar-plot>
+            </div>
         </div>
         <div class="is-size-5" v-html="status"></div>
     </div>
@@ -27,11 +33,14 @@
 
 import io from "socket.io-client"
 import Vue from "vue"
+import moment from "moment"
 
 import TimeDisplay from "./TimeDisplay.vue"
 import GeoLocationDisplay from "./GeoLocationDisplay.vue"
 import AstronTextDisplay from "./AstronTextDisplay.vue"
 import D3PolarPlot from "./D3PolarPlot.vue"
+
+import util from "./../util.js"
 
 export default {
     props: {
@@ -49,7 +58,7 @@ export default {
             this.requestGeoLocation(
             ).then(this.setGeoLocation
             ).then((geoLocation)=>{
-                this.currentTime = new Date().toISOString()
+                this.currentTime = moment.utc()
                 return this.requestAstronCoordinates(geoLocation)
             }).catch(
                 (err) => {
@@ -62,7 +71,7 @@ export default {
             Object.keys(this.astronObjects).forEach((name)=>{
                 this.socket.emit("get_astron_object_data", {
                     name: name,
-                    when: this.currentTime,
+                    when: this.currentTime.format(),
                     cb_name: "get_astron_object_data_handler",
                     geo_location: Object.assign({}, geoLocation)
                 })
@@ -94,7 +103,14 @@ export default {
         },
         getAstronObjectData(data){
             var name = data.name
-            Vue.set(this.astronObjects, name, data)
+            var astronObjectsCopy = Object.assign({}, this.astronObjects)
+            astronObjectsCopy[name] = data
+            this.astronObjects = Object.assign({}, astronObjectsCopy)
+            // Vue.set(this.astronObjects, name, data)
+            // console.log("getAstronObjectData")
+            // console.log(this.astronObjects)
+            // this.astronObjects = Object.assign(this.astronObjects, this.astronObjects[name], data)
+            // console.log(this.astronObjects)
         },
         registerSocketHandlers(socket){
             socket.on("connect", this.init)
@@ -107,16 +123,45 @@ export default {
         onGeoLocationChange(newGeoLocation){
             this.geoLocation = Object.assign(this.geoLocation, newGeoLocation)
             this.requestAstronCoordinates(this.geoLocation)
+        },
+        reRenderPolarPlot(){
+            var width = this.$refs["polar-plot-container"].offsetWidth
+            this.polarPlotWidth = width
+            this.polarPlotHeight = width
+            if (this.polarPlotKey === 0){
+                this.polarPlotKey = 1
+            }else{
+                this.polarPlotKey = 0
+            }
+        }
+    },
+    watch:{
+        astronObjects:{
+            handler: function(){
+                var astronPlotData = []
+                this.astronPlotData = Object.keys(this.astronObjects).forEach((name)=>{
+                    var obj = Object.assign({}, this.astronObjects[name])
+                    if ("az" in obj){
+                        obj.az = util.radToDegree(obj.az)
+                        obj.el = util.radToDegree(obj.el)
+                        astronPlotData.push(obj)
+                    }
+                })
+                this.astronPlotData = astronPlotData
+            },
+            deep: true
         }
     },
     mounted(){
         console.log(this.host, this.port)
         this.socket = io(`http://${this.host}:${this.port}`)
         this.registerSocketHandlers(this.socket)
+        this.reRenderPolarPlot()
+
     },
     data(){
         return {
-            currentTime: new Date().toISOString(),
+            currentTime: moment.utc(),
             geoLocation: {lat: 0.0, lon: 0.0, elevation: 0.0},
             status: "",
             socket: null,
@@ -130,13 +175,19 @@ export default {
                 "Saturn": {},
                 "Uranus": {},
                 "Neptune": {}
-            }
+            },
+            astronPlotData: [],
+            polarPlotWidth: 100,
+            polarPlotHeight: 100,
+            polarPlotKey: 0
         }
     }
 }
 </script>
 
 
-<style scoped>
-
+<style>
+.field-label{
+    flex-grow: 2;
+}
 </style>

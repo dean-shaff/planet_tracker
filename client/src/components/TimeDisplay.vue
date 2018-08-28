@@ -1,34 +1,73 @@
 <template>
-    <div class="field is-grouped">
+<div>
+    <div class="field is-horizontal">
+        <div class="field-label is-normal">
+            <label class="label">Date</label>
+        </div>
+        <div class="field field-body is-grouped">
             <div class="control is-expanded">
-                <label class="label">Time (UTC)</label>
+                <input class="input" v-model="currentDate"/>
+            </div>
+        </div>
+    </div>
+    <div class="field is-horizontal">
+        <div class="field-label is-normal">
+            <label class="label">Time</label>
+        </div>
+        <div class="field field-body is-grouped">
+            <div class="control is-expanded">
                 <input class="input" v-model="currentTime"/>
             </div>
-            <div class="control">
-                <label class="label">&nbsp;</label>
-                <button class="button" @click="onClick">Change Time</button>
-            </div>
+        </div>
     </div>
+    <div class="field is-horizontal">
+        <div class="field field-label"></div>
+        <div class="field field-body is-grouped">
+            <div class="control">
+                <button class="button" @click="onChangeTimeClick">Get Ephemerides</button>
+            </div>
+            <div class="control">
+                <button class="button" @click="onNowClick">Now</button>
+            </div>
+        </div>
+    </div>
+</div>
 </template>
 
 <script>
+
+import moment from "moment"
+
+
 export default {
     props: {
-        time: {type: String, default: ""}
+        time: {type: Object, default: ()=>{return moment.utc()}}
     },
     methods: {
-        onClick(){
-            this.$emit("on-change", this.currentTime)
+        onChangeTimeClick(){
+            this.$emit("on-change", this.parseDateTime())
+        },
+        onNowClick(){
+            this.$emit("on-change", moment.utc())
+        },
+        parseDateTime(){
+            var dateTime = moment.utc(
+                `${this.currentDate} ${this.currentTime}`,
+                "YYYY/MM/DD HH:mm:ss"
+            )
+            return dateTime
         }
     },
     watch: {
         time(){
-            this.currentTime = this.time
+            this.currentTime = this.time.format("HH:mm:ss")
+            this.currentDate = this.time.format("YYYY/MM/DD")
         }
     },
     data(){
         return {
-            currentTime: this.time
+            currentTime: this.time.format("HH:mm:ss"),
+            currentDate: this.time.format("YYYY/MM/DD")
         }
     }
 }

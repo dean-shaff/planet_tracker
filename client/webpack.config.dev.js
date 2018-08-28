@@ -26,6 +26,21 @@ module.exports = {
                 include: path.resolve(__dirname, "src"),
                 loader: "babel-loader"
             },
+            // {
+            //     test: /\.scss$/,
+            //     use: [
+            //          MiniCssExtractPlugin.loader,
+            //          {
+            //            loader: "css-loader",
+            //            options: {
+            //              modules: true,
+            //              sourceMap: true,
+            //              importLoader: 2
+            //            }
+            //          },
+            //          "sass-loader"
+            //        ]
+            //  }
             {
                 test: /\.css$/,
                 use:[
@@ -34,8 +49,10 @@ module.exports = {
                         //     publicPath: path.resolve(__dirname, "dist")
                         // }
                     "css-loader"
+                    // "sass-loader"
                 ]
             }
+
 
         ]
     },

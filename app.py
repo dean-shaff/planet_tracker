@@ -84,7 +84,7 @@ class App(object):
         when_str = str(data["when"])
         when = datetime.datetime.strptime(
             when_str,
-            "%Y-%m-%dT%H:%M:%S.%fZ"
+            "%Y-%m-%dT%H:%M:%SZ"
         )
         self.observer.date = when
         astron_obj_name = str(data["name"])
