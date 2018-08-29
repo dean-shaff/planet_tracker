@@ -31,10 +31,13 @@
         </div>
     </div>
     <div class="field is-horizontal">
-        <div class="field-label"></div>
-        <div class="field-body">
+        <div class="field field-label"></div>
+        <div class="field field-body is-grouped">
             <div class="control">
-                <button class="button" @click="onClick">Get Ephemerides</button>
+                <button class="button" @click="onGetEphemeridesClick">Get Ephemerides</button>
+            </div>
+            <div class="control">
+                <button class="button" @click="onHereClick">Here</button>
             </div>
         </div>
     </div>
@@ -47,9 +50,9 @@ export default {
         geoLocation: {type: Object, default: ()=>{return null}}
     },
     methods: {
-        onClick(){
+        onGetEphemeridesClick(){
             console.log(
-                `GeoLocationDisplay.onClick: lat: ${this.lat}, lon: ${this.lon}, elevation: ${this.elevation}`)
+                `GeoLocationDisplay.onGetEphemeridesClick: lat: ${this.lat}, lon: ${this.lon}, elevation: ${this.elevation}`)
             this.$emit(
                 "on-change",
                 {
@@ -58,6 +61,12 @@ export default {
                     elevation: this.elevation
                 }
             )
+        },
+        onHereClick(){
+            console.log(
+                `GeoLocationDisplay.onHereClick`
+            )
+            this.$emit("on-here")
         }
     },
     watch:{

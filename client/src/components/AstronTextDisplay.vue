@@ -3,16 +3,14 @@
         <table class="table is-hoverable">
             <thead>
                 <td>Name</td>
-                <td>Azimuth</td>
-                <td>Elevation</td>
-                <td>Magnitude</td>
+                <td>Azimuth/ Elevation</td>
+                <td><a href="https://en.wikipedia.org/wiki/Apparent_magnitude" target="_blank"><em>m</em></a></td>
                 <td>Setting Time (UTC)</td>
             </thead>
             <tbody class="tbody">
                 <tr v-for="name in Object.keys(astronDisplayData)">
                     <td>{{name}}</td>
-                    <td>{{astronDisplayData[name].az}}</td>
-                    <td>{{astronDisplayData[name].el}}</td>
+                    <td>{{astronDisplayData[name].az}}&deg;/{{astronDisplayData[name].el}}&deg;</td>
                     <td>{{astronDisplayData[name].magnitude}}</td>
                     <td>{{astronDisplayData[name].setting_time}}</td>
                 </tr>

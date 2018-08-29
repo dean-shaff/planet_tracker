@@ -10,10 +10,10 @@ var init = ()=>{
         data(){
             return {
                 port: "5000",
-                host: "localhost"                
+                host: "localhost"
             }
         },
-        el: "#main",
+        el: "#app",
         template:`<app ref="app" :port="port" :host="host"></app>`
     })
     return app

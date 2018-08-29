@@ -28,8 +28,8 @@ export default {
         var [outerArc, largeArc] = this.createOuterArc(plot,radius, 15)
         this.plot = plot
         this.scale = radiusScale
-        this.tooltip = new D3ToolTip()
-        this.tooltipClick = new D3ToolTip()
+        this.tooltip = new D3ToolTip({class: "d3-tip"})
+        this.tooltipClick = new D3ToolTip({class: "d3-tip"})
         // this.registerEventHandlers()
     },
     methods: {
@@ -166,7 +166,7 @@ export default {
         hideCircles: function(type){
             // console.log(`D3PolarPlot.hideCircles: type: ${type}`)
             this.plot.selectAll(`circle.scatter.${type}`)
-                .attr("r",0.0)
+                .attr("r", 0.0)
         },
         showCircles: function(type){
             // console.log(`D3PolarPlot.showCircles: type: ${type}`)
@@ -181,9 +181,9 @@ export default {
             var getOption = (param)=>{
                 return (d)=>{
                     var optionVal = kwargs[param]
-                    if ("category" in d){
-                        if (d.category in this.circleOptions){
-                            optionVal = this.circleOptions[d.category][param]
+                    if ("name" in d){
+                        if (d.name in this.circleOptions){
+                            optionVal = this.circleOptions[d.name][param]
                         }
                     }
                     if (optionVal != undefined){
@@ -252,4 +252,5 @@ export default {
 </script>
 
 <style scoped>
+
 </style>

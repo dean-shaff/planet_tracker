@@ -1,32 +1,44 @@
 <template>
-    <div>
-        <div class="columns">
-            <div class="column is-one-quarter">
-                <time-display
-                    class="box"
-                    :time="currentTime"
-                    @on-change="onTimeChange">
-                </time-display>
-                <geo-location-display
-                    class="box"
-                    :geoLocation="geoLocation"
-                    @on-change="onGeoLocationChange">
-                </geo-location-display>
-                <astron-text-display
-                    :astronObjects="astronObjects">
-                </astron-text-display>
-            </div>
-            <div class="column" ref="polar-plot-container">
-                <d3-polar-plot
-                    :circles="astronPlotData"
-                    :width="polarPlotWidth"
-                    :height="polarPlotHeight"
-                    :key="polarPlotKey">
-                </d3-polar-plot>
-            </div>
+<div>
+    <nav class="level">
+        <div class="level-item">
+            <h2 class="is-size-2">Planet Tracker</h2>
         </div>
-        <div class="is-size-5" v-html="status"></div>
-    </div>
+    </nav>
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-one-third">
+                    <time-display
+                        class="box"
+                        :time="currentTime"
+                        @on-change="onTimeChange">
+                    </time-display>
+                    <geo-location-display
+                        class="box"
+                        :geoLocation="geoLocation"
+                        @on-change="onGeoLocationChange"
+                        @on-here="onHere">
+                    </geo-location-display>
+                    <astron-text-display
+                        class="box"
+                        :astronObjects="astronObjects">
+                    </astron-text-display>
+                </div>
+                <div class="column" ref="polar-plot-container">
+                    <d3-polar-plot
+                        :circles="astronPlotData"
+                        :circleOptions="astronPlotOptions"
+                        :width="polarPlotWidth"
+                        :height="polarPlotHeight"
+                        :key="polarPlotKey">
+                    </d3-polar-plot>
+                </div>
+            </div>
+            <div class="is-size-5" v-html="status"></div>
+        </div>
+    </section>
+</div>
 </template>
 
 <script>
@@ -60,12 +72,15 @@ export default {
             ).then((geoLocation)=>{
                 this.currentTime = moment.utc()
                 return this.requestAstronCoordinates(geoLocation)
-            }).catch(
-                (err) => {
-                    console.error(err)
-                    this.status = err.message
-                }
-            )
+            }).catch(this.geoLocationError)
+        },
+        onHere(){
+            console.log(`App.onHere`)
+            this.requestGeoLocation(
+            ).then(this.setGeoLocation
+            ).then((geoLocation)=>{
+                return this.requestAstronCoordinates(geoLocation)
+            }).catch(this.geoLocationError)
         },
         requestAstronCoordinates(geoLocation){
             Object.keys(this.astronObjects).forEach((name)=>{
@@ -101,6 +116,10 @@ export default {
                 )
             }
         },
+        geoLocationError(err){
+            console.error(err)
+            this.status = err.message
+        },
         getAstronObjectData(data){
             var name = data.name
             var astronObjectsCopy = Object.assign({}, this.astronObjects)
@@ -133,6 +152,10 @@ export default {
             }else{
                 this.polarPlotKey = 0
             }
+        },
+        calculateSizeFromMagnitude(magnitude){
+            magnitude *= -1
+            return magnitude + 17
         }
     },
     watch:{
@@ -141,9 +164,20 @@ export default {
                 var astronPlotData = []
                 this.astronPlotData = Object.keys(this.astronObjects).forEach((name)=>{
                     var obj = Object.assign({}, this.astronObjects[name])
+                    if ("magnitude" in obj){
+                        this.astronPlotOptions[name].r = this.calculateSizeFromMagnitude(obj.magnitude)
+                    }
                     if ("az" in obj){
                         obj.az = util.radToDegree(obj.az)
                         obj.el = util.radToDegree(obj.el)
+                        if (obj.el < this.horizon){
+                            obj.el *= -1
+                            this.astronPlotOptions[name].opacity = this.underHorizonOpacity
+                            this.astronPlotOptions[name].fill = this.underHorizonFill
+                        }else{
+                            this.astronPlotOptions[name].opacity = this.visibleOpacity
+                            this.astronPlotOptions[name].fill = this.planetFill[name]
+                        }
                         astronPlotData.push(obj)
                     }
                 })
@@ -160,6 +194,19 @@ export default {
 
     },
     data(){
+        var planetFill = {
+            "Sun": "rgb(255,204,0)",
+            "Mercury": "rgb(215,179,119)",
+            "Venus": "rgb(171,99,19)",
+            "Mars": "rgb(114,47,18)",
+            "Moon": "rgba(128,128,128)",
+            "Jupiter": "rgb(150,81,46)",
+            "Saturn": "rgb(215,179,119)",
+            "Uranus": "rgb(195,233,236)",
+            "Neptune": "rgb(71,114,255)"
+        }
+        var visibleOpacity = 0.8
+        var underHorizonOpacity = 0.4
         return {
             currentTime: moment.utc(),
             geoLocation: {lat: 0.0, lon: 0.0, elevation: 0.0},
@@ -176,6 +223,22 @@ export default {
                 "Uranus": {},
                 "Neptune": {}
             },
+            "planetFill": planetFill,
+            astronPlotOptions: {
+                "Sun": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Sun"], opacity: visibleOpacity},
+                "Mercury": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Mercury"], opacity: visibleOpacity},
+                "Venus": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Venus"], opacity: visibleOpacity},
+                "Mars": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Mars"], opacity: visibleOpacity},
+                "Moon": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Moon"], opacity: visibleOpacity},
+                "Jupiter": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Jupiter"], opacity: visibleOpacity},
+                "Saturn": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Saturn"], opacity: visibleOpacity},
+                "Uranus": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Uranus"], opacity: visibleOpacity},
+                "Neptune": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Neptune"], opacity: visibleOpacity}
+            },
+            underHorizonFill: "rgba(180, 180, 180)",
+            "visibleOpacity": visibleOpacity,
+            "underHorizonOpacity": underHorizonOpacity,
+            horizon: 0.0,
             astronPlotData: [],
             polarPlotWidth: 100,
             polarPlotHeight: 100,

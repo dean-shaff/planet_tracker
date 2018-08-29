@@ -52,7 +52,11 @@ class App(object):
         observer.pressure = 0
         observer.epoch = ephem.J2000
 
-        app = Flask(__name__)
+        app = Flask(
+            __name__,
+            static_folder="client/dist",
+            template_folder="client"
+        )
         app.config["SECRET_KEY"] = "planet-app"
         socketio = SocketIO(app)
 

@@ -474,6 +474,14 @@
 
 
 
+
+
+
+
+
+
+
+
 .field-label{
     flex-grow: 2;
 }
@@ -10150,5 +10158,15 @@ label.panel-block:hover {
 }
 .field-label {
     flex-grow: 1.5;
+}
+
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 4px;
+    pointer-events: none;
 }
 
