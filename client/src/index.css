@@ -1,3 +1,6 @@
+@import "./../node_modules/bulma/css/bulma.css";
+@import "./../node_modules/bulma-slider/dist/css/bulma-slider.min.css";
+
 .field-label {
     flex-grow: 1.5;
 }
@@ -11,5 +14,3 @@
     border-radius: 4px;
     pointer-events: none;
 }
-
-@import "./../node_modules/bulma/css/bulma.css"

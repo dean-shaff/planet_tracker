@@ -17,6 +17,7 @@
         <div class="field field-body is-grouped">
             <div class="control is-expanded">
                 <input class="input" v-model="currentTime"/>
+                <input class="slider is-fullwidth" step="15" min="0" :max="24*60" v-model="minute" type="range">
             </div>
         </div>
     </div>
@@ -24,7 +25,7 @@
         <div class="field field-label"></div>
         <div class="field field-body is-grouped">
             <div class="control">
-                <button class="button" @click="onChangeTimeClick">Get Ephemerides</button>
+                <button class="button" @click="onGetEphemeridesClick">Get Ephemerides</button>
             </div>
             <div class="control">
                 <button class="button" @click="onNowClick">Now</button>
@@ -44,11 +45,14 @@ export default {
         time: {type: Object, default: ()=>{return moment.utc()}}
     },
     methods: {
-        onChangeTimeClick(){
-            this.$emit("on-change", this.parseDateTime())
+        onGetEphemeridesClick(){
+            this.initialTime = this.parseDateTime()
+            this.$emit("on-change", this.initialTime)
         },
         onNowClick(){
-            this.$emit("on-change", moment.utc())
+            var now = moment.utc()
+            this.initialTime = now.clone()
+            this.$emit("on-change", now)
         },
         parseDateTime(){
             var dateTime = moment.utc(
@@ -62,12 +66,20 @@ export default {
         time(){
             this.currentTime = this.time.format("HH:mm:ss")
             this.currentDate = this.time.format("YYYY/MM/DD")
+        },
+        minute(){
+            var currentTimeObj = this.initialTime.clone()
+            currentTimeObj.add(this.minute, "minutes")
+            this.currentTime = currentTimeObj.format("HH:mm:ss")
+            this.$emit("on-change", this.parseDateTime())
         }
     },
     data(){
         return {
+            initialTime: this.time.clone(),
             currentTime: this.time.format("HH:mm:ss"),
-            currentDate: this.time.format("YYYY/MM/DD")
+            currentDate: this.time.format("YYYY/MM/DD"),
+            minute: 0
         }
     }
 }
