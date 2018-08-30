@@ -86,6 +86,7 @@ export default {
     },
     methods:{
         init(){
+            console.log("App.init")
             this.requestGeoLocation(
             ).then(this.setGeoLocation
             ).then((geoLocation)=>{
@@ -132,6 +133,7 @@ export default {
             this.status = err.message
         },
         getAstronObjectData(data){
+            console.log("App.getAstronObjectData")
             var name = data.name
             var astronObjectsCopy = Object.assign({}, this.astronObjects)
             astronObjectsCopy[name] = data
