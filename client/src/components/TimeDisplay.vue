@@ -7,6 +7,7 @@
         <div class="field field-body is-grouped">
             <div class="control is-expanded">
                 <input class="input" v-model="currentDate"/>
+                <input class="slider is-fullwidth" step="1" min="0" max="365" v-model="day" type="range">
             </div>
         </div>
     </div>
@@ -72,6 +73,12 @@ export default {
             currentTimeObj.add(this.minute, "minutes")
             this.currentTime = currentTimeObj.format("HH:mm:ss")
             this.$emit("on-change", this.parseDateTime())
+        },
+        day(){
+            var currentTimeObj = this.initialTime.clone()
+            currentTimeObj.add(this.day, "days")
+            this.currentDate = currentTimeObj.format("YYYY/MM/DD")
+            this.$emit("on-change", this.parseDateTime())
         }
     },
     data(){
@@ -79,7 +86,8 @@ export default {
             initialTime: this.time.clone(),
             currentTime: this.time.format("HH:mm:ss"),
             currentDate: this.time.format("YYYY/MM/DD"),
-            minute: 0
+            minute: 0,
+            day: 0
         }
     }
 }
