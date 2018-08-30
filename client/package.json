@@ -22,7 +22,9 @@
   "dependencies": {
     "bulma": "^0.7.1",
     "bulma-slider": "^2.0.0",
+    "bulma-tooltip": "^2.0.2",
     "d3": "^5.6.0",
+    "ionicons": "^4.4.3",
     "moment": "^2.22.2",
     "socket.io": "^2.1.1",
     "vue": "^2.5.17"
@@ -34,6 +36,7 @@
     "babel-preset-import-export": "^1.0.2",
     "css-loader": "^1.0.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
+    "file-loader": "^2.0.0",
     "mini-css-extract-plugin": "^0.4.2",
     "node-sass": "^4.9.3",
     "null-loader": "^0.1.1",

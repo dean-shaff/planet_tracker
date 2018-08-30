@@ -9,19 +9,13 @@
         <div class="container">
             <div class="columns">
                 <div class="column is-one-third">
-                    <time-display
-                        class="box"
+                    <geo-location-time-display
                         :time="currentTime"
-                        @on-change="onTimeChange">
-                    </time-display>
-                    <geo-location-display
-                        class="box"
                         :geoLocation="geoLocation"
-                        @on-change="onGeoLocationChange"
+                        @on-change="onChange"
                         @on-here="onHere">
-                    </geo-location-display>
+                    </geo-location-time-display>
                     <astron-text-display
-                        class="box"
                         :astronObjects="astronObjects">
                     </astron-text-display>
                 </div>
@@ -47,8 +41,9 @@ import io from "socket.io-client"
 import Vue from "vue"
 import moment from "moment"
 
-import TimeDisplay from "./TimeDisplay.vue"
-import GeoLocationDisplay from "./GeoLocationDisplay.vue"
+// import TimeDisplay from "./TimeDisplay.vue"
+// import GeoLocationDisplay from "./GeoLocationDisplay.vue"
+import GeoLocationTimeDisplay from "./GeoLocationTimeDisplay.vue"
 import AstronTextDisplay from "./AstronTextDisplay.vue"
 import D3PolarPlot from "./D3PolarPlot.vue"
 
@@ -62,8 +57,9 @@ export default {
     components:{
         "astron-text-display": AstronTextDisplay,
         "d3-polar-plot": D3PolarPlot,
-        "time-display": TimeDisplay,
-        "geo-location-display": GeoLocationDisplay
+        // "time-display": TimeDisplay,
+        // "geo-location-display": GeoLocationDisplay
+        "geo-location-time-display": GeoLocationTimeDisplay
     },
     methods:{
         init(){
@@ -71,14 +67,6 @@ export default {
             ).then(this.setGeoLocation
             ).then((geoLocation)=>{
                 this.currentTime = moment.utc()
-                return this.requestAstronCoordinates(geoLocation)
-            }).catch(this.geoLocationError)
-        },
-        onHere(){
-            console.log(`App.onHere`)
-            this.requestGeoLocation(
-            ).then(this.setGeoLocation
-            ).then((geoLocation)=>{
                 return this.requestAstronCoordinates(geoLocation)
             }).catch(this.geoLocationError)
         },
@@ -135,14 +123,21 @@ export default {
             socket.on("connect", this.init)
             socket.on("get_astron_object_data_handler", this.getAstronObjectData)
         },
-        onTimeChange(newTime){
+        onChange(newGeoLocation, newTime){
+            console.log(`App.onChange`)
             this.currentTime = newTime
-            this.requestAstronCoordinates(this.geoLocation)
-        },
-        onGeoLocationChange(newGeoLocation){
             this.geoLocation = Object.assign(this.geoLocation, newGeoLocation)
             this.requestAstronCoordinates(this.geoLocation)
         },
+        onHere(){
+            console.log(`App.onHere`)
+            this.requestGeoLocation(
+            ).then(this.setGeoLocation
+            ).then((geoLocation)=>{
+                return this.requestAstronCoordinates(geoLocation)
+            }).catch(this.geoLocationError)
+        },
+
         reRenderPolarPlot(){
             var width = this.$refs["polar-plot-container"].offsetWidth
             this.polarPlotWidth = width
@@ -203,7 +198,8 @@ export default {
             "Jupiter": "rgb(150,81,46)",
             "Saturn": "rgb(215,179,119)",
             "Uranus": "rgb(195,233,236)",
-            "Neptune": "rgb(71,114,255)"
+            "Neptune": "rgb(71,114,255)",
+            "Pluto": "rgba(128,128,128)"
         }
         var visibleOpacity = 0.8
         var underHorizonOpacity = 0.4
@@ -221,7 +217,8 @@ export default {
                 "Jupiter": {},
                 "Saturn": {},
                 "Uranus": {},
-                "Neptune": {}
+                "Neptune": {},
+                "Pluto": {},
             },
             "planetFill": planetFill,
             astronPlotOptions: {
@@ -233,7 +230,8 @@ export default {
                 "Jupiter": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Jupiter"], opacity: visibleOpacity},
                 "Saturn": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Saturn"], opacity: visibleOpacity},
                 "Uranus": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Uranus"], opacity: visibleOpacity},
-                "Neptune": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Neptune"], opacity: visibleOpacity}
+                "Neptune": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Neptune"], opacity: visibleOpacity},
+                "Pluto": {r: 10, class: "scatter", stroke: 1.0, fill: planetFill["Pluto"], opacity: visibleOpacity}
             },
             underHorizonFill: "rgba(180, 180, 180)",
             "visibleOpacity": visibleOpacity,

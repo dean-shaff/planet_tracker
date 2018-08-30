@@ -1,5 +1,7 @@
 @import "./../node_modules/bulma/css/bulma.css";
 @import "./../node_modules/bulma-slider/dist/css/bulma-slider.min.css";
+@import "./../node_modules/bulma-tooltip/dist/css/bulma-tooltip.min.css";
+@import "./../node_modules/ionicons/dist/css/ionicons.min.css";
 
 .field-label {
     flex-grow: 1.5;
@@ -13,4 +15,13 @@
     color: #fff;
     border-radius: 4px;
     pointer-events: none;
+}
+
+.icon:hover {
+    color: red;
+}
+
+.section {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
