@@ -1,18 +1,18 @@
 <template>
     <div>
-        <table class="table is-hoverable">
+        <table class="table is-hoverable" :key="key">
             <thead>
                 <td>Name</td>
                 <td>Azimuth/ Elevation</td>
                 <td><a href="https://en.wikipedia.org/wiki/Apparent_magnitude" target="_blank"><em>m</em></a></td>
-                <td>Setting Time (UTC)</td>
+                <td v-show="detectMobile()">Setting Time (UTC)</td>
             </thead>
             <tbody class="tbody">
                 <tr v-for="name in Object.keys(astronDisplayData)">
                     <td>{{name}}</td>
                     <td>{{astronDisplayData[name].az}}&deg;/{{astronDisplayData[name].el}}&deg;</td>
                     <td>{{astronDisplayData[name].magnitude}}</td>
-                    <td>{{astronDisplayData[name].setting_time}}</td>
+                    <td v-show="detectMobile()">{{astronDisplayData[name].setting_time}}</td>
                 </tr>
             </tbody>
         </table>
@@ -31,6 +31,13 @@ export default {
         onClick(name){
             console.log(JSON.stringify(this.astronObjects[name]))
         },
+        onResize(){
+            if (this.key == 0){
+                this.key = 1
+            }else{
+                this.key = 0
+            }
+        },
         updateDisplayData(){
             var displayData = {}
             Object.keys(this.astronObjects).forEach((name)=>{
@@ -44,6 +51,10 @@ export default {
                 displayData[name] = displayObject
             })
             return displayData
+        },
+        detectMobile(){
+            console.log(`detectMobile: ${window.innerWidth}`)
+            return window.innerWidth > 768
         }
     },
     computed: {
@@ -51,9 +62,13 @@ export default {
             return this.updateDisplayData()
         }
     },
+    mounted(){
+        window.addEventListener('resize', this.onResize)
+    },
     data(){
         return {
-            formattableFields: ["az", "el", "ra", "dec"]
+            formattableFields: ["az", "el", "ra", "dec"],
+            key: 0
         }
     }
 }

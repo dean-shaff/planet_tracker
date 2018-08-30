@@ -1,20 +1,41 @@
 <template>
 <div>
-    <nav class="level">
-        <div class="level-item">
-            <h2 class="is-size-2">Planet Tracker</h2>
-        </div>
-    </nav>
     <section class="section">
         <div class="container">
+            <div class="level">
+                <div class="level-left">
+                    <div class="level-item">
+                        <h1 class="title is-1">Planet Tracker</h1>
+                    </div>
+                </div>
+                <div class="level-right">
+                    <div class="level-item">
+                        <a href="https://github.com/dean-shaff/planet-tracker" target="_blank">
+                            <h1 class="title is-1">Source</h1>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="is-divider"></div>
             <div class="columns">
                 <div class="column is-one-third">
+                    <div class="level">
+                        <div class="level-item">
+                            <h3 class="subtitle is-3">Geo Location and Time</h3>
+                        </div>
+                    </div>
                     <geo-location-time-display
                         :time="currentTime"
                         :geoLocation="geoLocation"
                         @on-change="onChange"
                         @on-here="onHere">
                     </geo-location-time-display>
+                    <div class="is-divider"></div>
+                    <div class="level">
+                        <div class="level-item">
+                            <h3 class="subtitle is-3">Planet Ephemerides</h3>
+                        </div>
+                    </div>
                     <astron-text-display
                         :astronObjects="astronObjects">
                     </astron-text-display>
@@ -29,7 +50,8 @@
                     </d3-polar-plot>
                 </div>
             </div>
-            <div class="is-size-5" v-html="status"></div>
+            <!-- <div class="is-size-5" v-html="status"></div> -->
+            <div class="is-size-6">Version {{version}}</div>
         </div>
     </section>
 </div>
@@ -52,7 +74,8 @@ import util from "./../util.js"
 export default {
     props: {
         host: {type: String, default: "localhost"},
-        port: {type: String, default: "5000"}
+        port: {type: String, default: "5000"},
+        version: {type: String, default: ""}
     },
     components:{
         "astron-text-display": AstronTextDisplay,
@@ -186,7 +209,7 @@ export default {
         this.socket = io(`http://${this.host}:${this.port}`)
         this.registerSocketHandlers(this.socket)
         this.reRenderPolarPlot()
-
+        window.addEventListener('resize', this.reRenderPolarPlot)
     },
     data(){
         var planetFill = {
