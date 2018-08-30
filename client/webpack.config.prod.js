@@ -7,7 +7,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 module.exports = {
     mode: 'production',
     entry: [
-        "./src/index.js",
+        "./src/app.js",
         "./src/index.css"
     ],
     output: {
@@ -35,8 +35,11 @@ module.exports = {
                         // }
                     "css-loader"
                 ]
+            },
+            {
+                test: /\.(eot|woff|woff2|svg|ttf)([\?]?.*)$/,
+                loader: "file-loader"
             }
-
         ]
     },
     plugins: [
@@ -47,7 +50,7 @@ module.exports = {
     ],
     resolve: {
         alias: {
-            'vue$': 'vue/dist/vue.esm.js' // 'vue/dist/vue.common.js' for webpack 1
+            'vue$': 'vue/dist/vue.esm.js'
         }
     },
     // devtool:"source-map"
