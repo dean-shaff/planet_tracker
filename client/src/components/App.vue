@@ -207,8 +207,9 @@ export default {
         }
     },
     mounted(){
-        console.log(this.host, this.port)
-        this.socket = io(`http://${this.host}:${this.port}`)
+        // console.log(this.host, this.port)
+        // this.socket = io(`https://${this.host}:${this.port}`)
+        this.socket = io()
         this.registerSocketHandlers(this.socket)
         this.reRenderPolarPlot()
         window.addEventListener('resize', this.reRenderPolarPlot)
