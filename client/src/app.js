@@ -12,7 +12,7 @@ var init = ()=>{
         data(){
             return {
                 port: "5000",
-                host: "localhost",
+                host: document.domain,
                 "version": version
             }
         },
