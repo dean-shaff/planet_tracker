@@ -1,5 +1,5 @@
 <template>
-<div>
+<div :key="key">
     <div class="field is-horizontal">
         <div class="field-label is-normal">
             <label class="label">Date
@@ -18,7 +18,7 @@
                 <input class="slider is-fullwidth" step="1" min="0" max="365" v-model="day" type="range">
             </div>
             <div class="control">
-                <span class="is-small is-left tooltip is-tooltip-bottom" :data-tooltip="helpText.date">
+                <span class="is-small is-left tooltip" :class="toolTipClass" :data-tooltip="helpText.date">
                     <i class="icon ion-md-help-circle-outline"></i>
                 </span>
             </div>
@@ -42,7 +42,7 @@
                 <input class="slider is-fullwidth" step="15" min="0" :max="24*60" v-model="minute" type="range">
             </div>
             <div class="control">
-                <span class="is-small is-left tooltip is-tooltip-bottom" :data-tooltip="helpText.time">
+                <span class="is-small is-left tooltip" :class="toolTipClass" :data-tooltip="helpText.time">
                     <i class="icon ion-md-help-circle-outline"></i>
                 </span>
             </div>
@@ -105,6 +105,14 @@ export default {
         time: {type: Object, default: ()=>{return moment.utc()}}
     },
     methods: {
+        onResize(){
+            this.detectMobile()
+            if (this.key === 0){
+                this.key = 1
+            }else{
+                this.key = 0
+            }
+        },
         onGetEphemeridesClick(){
             this.initialTime = this.parseDateTime()
             console.log(
@@ -141,7 +149,22 @@ export default {
                 lat: this.lat,
                 elevation: this.elevation
             }
+        },
+        detectMobile(){
+            if (window.innerWidth > 768){
+                this.toolTipClass = {
+                    "is-tooltip-bottom": true
+                }
+            } else {
+                this.toolTipClass = {
+                    "is-tooltip-left": true
+                }
+            }
         }
+    },
+    mounted(){
+        window.addEventListener('resize', this.onResize)
+        this.$nextTick(this.onResize)
     },
     watch: {
         geoLocation(){
@@ -164,6 +187,9 @@ export default {
             currentTimeObj.add(this.day, "days")
             this.currentDate = currentTimeObj.format("YYYY/MM/DD")
             this.$emit("on-change", this.getGeoLocation(), this.parseDateTime())
+        },
+        toolTipClass(){
+            console.log('here')
         }
     },
     data() {
@@ -179,6 +205,10 @@ export default {
             helpText: {
                 date: "Move the slider to increment the date by 1 day",
                 time: "Move the slider to increment the time by 15 minutes"
+            },
+            key: 0,
+            toolTipClass: {
+                'is-tooltip-bottom': true,
             }
         }
     }

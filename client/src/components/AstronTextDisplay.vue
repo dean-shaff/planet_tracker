@@ -53,7 +53,6 @@ export default {
             return displayData
         },
         detectMobile(){
-            console.log(`detectMobile: ${window.innerWidth}`)
             return window.innerWidth > 768
         }
     },
