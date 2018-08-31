@@ -18,8 +18,11 @@
                 <input class="slider is-fullwidth" step="1" min="0" max="365" v-model="day" type="range">
             </div>
             <div class="control">
-                <span class="is-small is-left tooltip" :class="toolTipClass" :data-tooltip="helpText.date">
-                    <i class="icon ion-md-help-circle-outline"></i>
+                <span
+                    class="icon is-small is-left tooltip"
+                    :class="toolTipClass"
+                    :data-tooltip="helpText.date"
+                    v-html="questionMark">
                 </span>
             </div>
         </div>
@@ -42,8 +45,11 @@
                 <input class="slider is-fullwidth" step="15" min="0" :max="24*60" v-model="minute" type="range">
             </div>
             <div class="control">
-                <span class="is-small is-left tooltip" :class="toolTipClass" :data-tooltip="helpText.time">
-                    <i class="icon ion-md-help-circle-outline"></i>
+                <span
+                    class="icon is-small is-left tooltip"
+                    :class="toolTipClass"
+                    :data-tooltip="helpText.time"
+                    v-html="questionMark">
                 </span>
             </div>
         </div>
@@ -98,6 +104,7 @@
 <script>
 
 import moment from "moment"
+import octicons from "octicons"
 
 export default {
     props: {
@@ -209,14 +216,15 @@ export default {
             key: 0,
             toolTipClass: {
                 'is-tooltip-bottom': true,
-            }
+            },
+            questionMark: octicons.question.toSVG()
         }
     }
 }
 </script>
 
 <style scoped>
-.control i {
-    margin-top: 0.75rem;
+.control span {
+    margin-top: 1rem;
 }
 </style>

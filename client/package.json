@@ -1,6 +1,6 @@
 {
   "name": "planet-tracker_client",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Vue.js planet tracker client",
   "main": "app.js",
   "scripts": {
@@ -25,8 +25,8 @@
     "bulma-slider": "^2.0.0",
     "bulma-tooltip": "^2.0.2",
     "d3": "^5.6.0",
-    "ionicons": "^4.4.3",
     "moment": "^2.22.2",
+    "octicons": "^8.1.0",
     "socket.io": "^2.1.1",
     "vue": "^2.5.17"
   },

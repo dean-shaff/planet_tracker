@@ -214,6 +214,9 @@ export default {
         this.reRenderPolarPlot()
         window.addEventListener('resize', this.reRenderPolarPlot)
     },
+    destroyed(){
+        this.socket.disconnect()
+    },
     data(){
         var planetFill = {
             "Sun": "rgb(255,204,0)",

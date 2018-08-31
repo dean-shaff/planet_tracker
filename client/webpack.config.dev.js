@@ -54,8 +54,14 @@ module.exports = {
             },
             {
                 test: /\.(eot|woff|woff2|svg|ttf)([\?]?.*)$/,
-                loader: "file-loader"
+                loader: "file-loader",
+                // loader: 'file?name=public/fonts/[name].[ext]'
+
             }
+            // { test: /\.woff$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
+            // { test: /\.ttf$/,  loader: "url-loader?limit=10000&mimetype=application/octet-stream" },
+            // { test: /\.eot$/,  loader: "file-loader" },
+            // { test: /\.svg$/,  loader: "url-loader?limit=10000&mimetype=image/svg+xml" }
         ]
     },
     plugins: [
