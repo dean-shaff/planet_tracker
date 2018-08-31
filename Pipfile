@@ -8,7 +8,7 @@ name = "pypi"
 [packages]
 flask = "*"
 flask-socketio = "*"
-gunicorn = "*"
+gunicorn = "==19.7.1"
 ephem = "*"
 eventlet = "*"
 

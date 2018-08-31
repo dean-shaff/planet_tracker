@@ -189,11 +189,15 @@ class App(object):
 
     def connect(self):
         self.n_connections += 1
-        self.app.logger.info("connect: Current number of connections: {}".format(self.n_connections))
+        self.app.logger.info(
+            "connect: Current number of connections: {}".format(
+                self.n_connections))
 
     def disconnect(self):
         self.n_connections -= 1
-        self.app.logger.info("disconnect: Current number of connections: {}".format(self.n_connections))
+        self.app.logger.info(
+            "disconnect: Current number of connections: {}".format(
+                self.n_connections))
 
     def main(self):
         self.app.logger.debug("Rendering index.html")
