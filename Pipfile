@@ -6,11 +6,11 @@ name = "pypi"
 [dev-packages]
 
 [packages]
-flask = "*"
-flask-socketio = "*"
 gunicorn = "==19.7.1"
 ephem = "*"
 eventlet = "*"
+aiohttp = "*"
+python-socketio = "*"
 
 [requires]
 python_version = "3.6"
