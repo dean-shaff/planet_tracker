@@ -12,6 +12,8 @@ import eventlet
 
 eventlet.monkey_patch()
 
+__version__ = "1.0.0"
+
 
 def sign(n):
     """

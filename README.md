@@ -1,5 +1,5 @@
-## Planet Tracker v2.0.2
+## Planet Tracker Server v1.0.0
 
-A simple Flask app for tracking the positions of planets in the sky. This app will ask to use geolocation.
-
-The client is written using Vue.js, along with the Bulma css framework.
+A simple Flask app for tracking the positions of planets in the sky. This is
+the server code. Head [here](https://github.com/dean-shaff/planet-tracker_client)
+for the Vue.js client.
