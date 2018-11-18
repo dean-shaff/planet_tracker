@@ -4,16 +4,13 @@ import logging
 
 import ephem
 from aiohttp import web
-import socketio
 
-__version__ = "1.1.0"
+__version__ = "2.0.0"
 
 
 logger = logging.getLogger("planet-tracker")
 routes = web.RouteTableDef()
-sio = socketio.AsyncServer()
 app = web.Application()
-sio.attach(app)
 
 
 def init_observer():
@@ -24,12 +21,12 @@ def init_observer():
     return observer
 
 
-@sio.on('get_astron_object_data')
-async def get_astron_object_data(sid, data):
+@routes.get('/get_astron_object_data')
+async def get_astron_object_data(request):
     """
     Get data about an astronomical object
     Args:
-        data (dictionary): A dictionary with the following keys:
+        request (aiohttp.Request): containing the following dict:
             - name: name of object
             - when: string indicating when we want data
             - geo_location: location for which we want ephemerides
@@ -37,12 +34,12 @@ async def get_astron_object_data(sid, data):
     Returns:
         None
     """
-    logger.debug(f"get_astron_object_data: {sid}")
+    logger.debug(f"get_astron_object_data")
+    data = request.query
     observer = init_observer()
-    observer_location = data["geo_location"]
-    observer.lon = str(observer_location["lon"])
-    observer.lat = str(observer_location["lat"])
-    observer.elevation = float(observer_location["elevation"])
+    observer.lon = str(data["lon"])
+    observer.lat = str(data["lat"])
+    observer.elevation = float(data["elevation"])
     when_str = str(data["when"])
     when = datetime.datetime.strptime(
         when_str,
@@ -66,19 +63,8 @@ async def get_astron_object_data(sid, data):
         "setting_time": str(observer.next_setting(astron_obj)),
         "when": when_str
     }
-    cb_name = data["cb_name"]
-    logger.debug(f"sending {return_data} to {cb_name}")
-    await sio.emit(cb_name, return_data)
-
-
-@sio.on('connect')
-def connect(sid, environ):
-    logger.debug(f"connect: {sid}")
-
-
-@sio.on('disconnect')
-def disconnect(sid):
-    logger.debug(f"disconnect: {sid}")
+    logger.debug(f"sending {return_data}")
+    return web.json_response(return_data)
 
 
 @routes.get("/")
