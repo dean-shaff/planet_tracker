@@ -8,9 +8,7 @@ name = "pypi"
 [packages]
 gunicorn = "==19.7.1"
 ephem = "*"
-eventlet = "*"
 aiohttp = "*"
-python-socketio = "*"
 
 [requires]
 python_version = "3.6"
