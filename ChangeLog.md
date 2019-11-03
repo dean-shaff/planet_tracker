@@ -11,3 +11,7 @@ use of web sockets.
 
 - Fixed bug on mobile where the keyboard would appear and immediately disappear when using one of the input fields in the `GeoLocationTimeDisplay` component.
 - On mobile, the Longitude, Latitude and Elevation boxes now use a keypad instead of a keyboard.
+
+### 3.0.3
+
+- Fixed bug where app couldn't correctly handle `null` elevation value.
