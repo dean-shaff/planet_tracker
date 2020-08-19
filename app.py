@@ -61,6 +61,7 @@ async def get_astron_object_data(request):
         "ra": astron_obj.ra,
         "dec": astron_obj.dec,
         "setting_time": str(observer.next_setting(astron_obj)),
+        "rising_time": str(observer.next_rising(astron_obj)),
         "when": when_str
     }
     logger.debug(f"sending {return_data}")

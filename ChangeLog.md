@@ -15,3 +15,8 @@ use of web sockets.
 ### 3.0.3
 
 - Fixed bug where app couldn't correctly handle `null` elevation value.
+
+### 3.1.0
+
+- Using poetry instead of pipenv.
+- Add next rising time to data sent to client 
