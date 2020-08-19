@@ -3,13 +3,35 @@ name: Heroku Deploy
 on: [push]
 
 jobs:
-  test:
+  heroku-deploy:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2
       with:
         submodules: "recursive"
+    - name: Set up Python 3.x
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+    - name: Install Poetry
+      run: |
+        curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+        echo "::add-path::${HOME}/.poetry/bin"
+    - name: Install package
+      run: |
+        poetry install
+        poetry update
+    - name: Recreate requirements.txt
+      run: |
+        poetry export -f requirements.txt > requirements.txt
+    - name: Push requirements.txt to Github
+      run: |
+        git config --global user.name '${GITHUB_ACTOR}'
+        git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
+        git add requirements.txt
+        git commit -m "update requirements.txt" || echo "No changes to commit"
+        git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
     - name: Setup Node
       uses: actions/setup-node@v1
       with:
@@ -18,3 +40,9 @@ jobs:
       run: |
         cd client
         npm run build:prod
+    - name: Push newly built client to Github
+      run: |
+        git add -u
+        git commit -m "Rebuild client" || echo "No changes to commit"
+        git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
+        
