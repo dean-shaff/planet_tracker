@@ -6,16 +6,26 @@ on:
 
 jobs:
 
-  test-submodule-update:
+  test-heroku-stuff:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Pull latest changes from client repo
-        run: |
-          cd client
-          git pull origin master
-
+      - name: Install Heroku CLI
+        run: sudo snap install --classic heroku
+      - name: Login to Heroku
+        run: heroku login
+      - name: Setup heroku remote
+        run: heroku git:remote -a planet-tracker
+      - name: Push to heroku
+        run: git push heroku master
+  # test-submodule-update:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Pull latest changes from client repo
+  #       run: |
+  #         cd client
+  #         git pull origin master
 
   start-build-pipeline:
     runs-on: ubuntu-latest
@@ -53,10 +63,11 @@ jobs:
       - name: Recreate requirements.txt
         run: |
           poetry export -f requirements.txt > requirements.txt
-      - name: Push requirements.txt to Github
+      - name: Push requirements.txt and new client changes to Github
         run: |
           git config --global user.name '${GITHUB_ACTOR}'
           git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
-          git add requirements.txt
-          git commit -m "update requirements.txt" || echo "No changes to commit"
+          git status
+          git add client requirements.txt
+          git commit -m "update and client requirements.txt" || echo "No changes to commit"
           git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
