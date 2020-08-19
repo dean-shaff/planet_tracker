@@ -20,6 +20,8 @@ jobs:
     if: github.event.action == 'build_completed'
     runs-on: ubuntu-latest
     steps:
+    - name: Pull latest changes from client repo
+      run: git submodule update --recursive --remote
     - name: Install Heroku CLI
       run: sudo snap install --classic heroku
     - name: Checkout
@@ -39,6 +41,7 @@ jobs:
     - name: Recreate requirements.txt
       run: |
         poetry export -f requirements.txt > requirements.txt
+    - name:
     - name: Push requirements.txt to Github
       run: |
         git config --global user.name '${GITHUB_ACTOR}'
