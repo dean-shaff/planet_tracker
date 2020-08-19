@@ -6,14 +6,16 @@ jobs:
   heroku-deploy:
     runs-on: ubuntu-latest
     steps:
+    - name: Install Heroku CLI
+      run: sudo snap install --classic heroku
     - name: Checkout
       uses: actions/checkout@v2
       with:
         submodules: "recursive"
     - name: Set up Python 3.x
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.x
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
     - name: Install Poetry
       run: |
         curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
@@ -45,4 +47,3 @@ jobs:
         git add -u
         git commit -m "Rebuild client" || echo "No changes to commit"
         git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
-        
