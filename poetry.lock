@@ -63,7 +63,7 @@ python-versions = "*"
 version = "3.7.7.1"
 
 [[package]]
-category = "dev"
+category = "main"
 description = "WSGI HTTP Server for UNIX"
 name = "gunicorn"
 optional = false
@@ -133,7 +133,7 @@ python = "<3.8"
 version = ">=3.7.4"
 
 [metadata]
-content-hash = "d0e9e0c715f2709ea154e9fd94df21acd0f825bcf65f116b660d25dfb3fd4da4"
+content-hash = "ce567ce625a5f1c8803a54c6c9098fc83f2a938239701d26bcb16ee7960a2e02"
 lock-version = "1.0"
 python-versions = "^3.6"
 

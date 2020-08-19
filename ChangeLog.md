@@ -1,6 +1,6 @@
 ## Change Log
 
-### 2.0.0
+### 3.0.0
 
 - Moved back to using HTTPS requests instead of web sockets. Web sockets
 simply didn't work when deployed on heroku. I'm not sure what the issue was,
@@ -19,4 +19,4 @@ use of web sockets.
 ### 3.1.0
 
 - Using poetry instead of pipenv.
-- Add next rising time to data sent to client 
+- Add next rising time to data sent to client

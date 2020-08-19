@@ -6,3 +6,5 @@ static/deprecated/
 *.ipynb
 *.zip
 client/node_modules
+
+token 

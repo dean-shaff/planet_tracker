@@ -5,7 +5,7 @@ import logging
 import ephem
 from aiohttp import web
 
-__version__ = "2.0.0"
+__version__ = "3.1.0"
 
 
 logger = logging.getLogger("planet-tracker")
