@@ -12,7 +12,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Pull latest changes from client repo
-        run: git submodule update --recursive --remote
+        run: |
+          cd client
+          git pull origin master
 
 
   start-build-pipeline:
