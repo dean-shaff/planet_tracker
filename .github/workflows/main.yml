@@ -5,65 +5,44 @@ on:
   repository_dispatch:
 
 jobs:
-  # heroku-deploy:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #   - name: Install Heroku CLI
-  #     run: sudo snap install --classic heroku
-  #   - name: Checkout
-  #     uses: actions/checkout@v2
-  #   - name: Set up Python 3.x
-  #     uses: actions/setup-python@v2
-  #     with:
-  #       python-version: 3.x
-  #   - name: Install Poetry
-  #     run: |
-  #       curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
-  #       echo "::add-path::${HOME}/.poetry/bin"
-  #   - name: Install package
-  #     run: |
-  #       poetry install
-  #       poetry update
-  #   - name: Recreate requirements.txt
-  #     run: |
-  #       poetry export -f requirements.txt > requirements.txt
-  #   - name: Push requirements.txt to Github
-  #     run: |
-  #       git config --global user.name '${GITHUB_ACTOR}'
-  #       git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
-  #       git add requirements.txt
-  #       git commit -m "update requirements.txt" || echo "No changes to commit"
-  #       git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
-
-  ping-pong:
+  start-build-pipeline:
     runs-on: ubuntu-latest
     steps:
-      - name: PING - Dispatch initiating repository event
-        if: github.event.action != 'pong'
+      - name: Dispatch request to client repository to build
+        if: github.event.action != 'build_completed'
         run: |
           curl -X POST https://api.github.com/repos/dean-shaff/planet-tracker_client/dispatches \
           -H 'Accept: application/vnd.github.everest-preview+json' \
           -u ${{ secrets.ACCESS_TOKEN }} \
-          --data '{"event_type": "ping", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
-      - name: ACK - Acknowledge pong from remote repository
-        if: github.event.action == 'pong'
-        run: |
-          echo "PONG received from '${{ github.event.client_payload.repository }}'" && \
-          curl -X POST https://api.github.com/repos/dean-shaff/planet-tracker_client/dispatches \
-          -H 'Accept: application/vnd.github.everest-preview+json' \
-          -u ${{ secrets.ACCESS_TOKEN }} \
-          --data '{"event_type": "ack", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
-    # - name: Setup Node
-    #   uses: actions/setup-node@v1
-    #   with:
-    #     node-version: 12.x
-    # - name: Build Client
-    #   run: |
-    #     cd client
-    #     npm install
-    #     npm run build:prod
-    # - name: Push newly built client to Github
-    #   run: |
-    #     git add -u
-    #     git commit -m "Rebuild client" || echo "No changes to commit"
-    #     git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
+          --data '{"event_type": "start_build", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
+
+  heroku-deploy:
+    if: github.event.action == 'build_completed'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Heroku CLI
+      run: sudo snap install --classic heroku
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up Python 3.x
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.x
+    - name: Install Poetry
+      run: |
+        curl -sSL https://raw.githubusercontent.com/sdispater/poetry/master/get-poetry.py | python
+        echo "::add-path::${HOME}/.poetry/bin"
+    - name: Install package
+      run: |
+        poetry install
+        poetry update
+    - name: Recreate requirements.txt
+      run: |
+        poetry export -f requirements.txt > requirements.txt
+    - name: Push requirements.txt to Github
+      run: |
+        git config --global user.name '${GITHUB_ACTOR}'
+        git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
+        git add requirements.txt
+        git commit -m "update requirements.txt" || echo "No changes to commit"
+        git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
