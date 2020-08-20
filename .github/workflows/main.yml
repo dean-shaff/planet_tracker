@@ -6,19 +6,19 @@ on:
 
 jobs:
 
-  start-build-pipeline:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Dispatch request to client repository to build
-        if: github.event.action != 'build_completed'
-        run: |
-          curl -X POST https://api.github.com/repos/dean-shaff/planet-tracker_client/dispatches \
-          -H 'Accept: application/vnd.github.everest-preview+json' \
-          -u ${{ secrets.ACCESS_TOKEN }} \
-          --data '{"event_type": "start_build", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
+  # start-build-pipeline:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Dispatch request to client repository to build
+  #       if: github.event.action != 'build_completed'
+  #       run: |
+  #         curl -X POST https://api.github.com/repos/dean-shaff/planet-tracker_client/dispatches \
+  #         -H 'Accept: application/vnd.github.everest-preview+json' \
+  #         -u ${{ secrets.ACCESS_TOKEN }} \
+  #         --data '{"event_type": "start_build", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
 
   heroku-deploy:
-    if: github.event.action == 'build_completed'
+    # if: github.event.action == 'build_completed'
     runs-on: ubuntu-latest
     steps:
       # - name: Install Heroku CLI
@@ -29,6 +29,17 @@ jobs:
         run: |
           git submodule update --init --recursive
           git pull --recurse-submodules
+          cd client
+          git pull origin master
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Build Client
+        run: |
+          cd client
+          npm install
+          npm run build:prod
       - name: Copy index.html and dist directory from client
         run: |
           cp ./client/index.html ./public
