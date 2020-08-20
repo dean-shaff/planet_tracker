@@ -6,17 +6,17 @@ on:
 
 jobs:
 
-  client-test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Pull latest changes from client repo
-        run: |
-          git submodule update --init --recursive
-          git pull --recurse-submodules
-      - name: List contents of client
-        run: ls client
+  # client-test:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
+  #     - name: Pull latest changes from client repo
+  #       run: |
+  #         git submodule update --init --recursive
+  #         git pull --recurse-submodules
+  #     - name: List contents of client
+  #       run: ls client
 
 
   start-build-pipeline:
@@ -39,7 +39,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Pull latest changes from client repo
-        run: git submodule update --recursive --remote
+        run: |
+          git submodule update --init --recursive
+          git pull --recurse-submodules
       - name: Copy index.html and dist directory from client
         run: |
           cp ./client/index.html ./public
@@ -64,6 +66,6 @@ jobs:
           git config --global user.name '${GITHUB_ACTOR}'
           git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'
           git status
-          git add public requirements.txt
-          git commit -m "update public and requirements.txt" || echo "No changes to commit"
+          git add client public requirements.txt
+          git commit -m "update client, public and requirements.txt" || echo "No changes to commit"
           git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
