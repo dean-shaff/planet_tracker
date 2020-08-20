@@ -6,6 +6,18 @@ on:
 
 jobs:
 
+  client-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Pull latest changes from client repo
+        run: |
+          git submodule update --init --recursive
+          git pull --recurse-submodules
+      - name: List contents of client
+        run: ls client
+
 
   start-build-pipeline:
     runs-on: ubuntu-latest
@@ -30,8 +42,8 @@ jobs:
         run: git submodule update --recursive --remote
       - name: Copy index.html and dist directory from client
         run: |
-          cp client/index.html ./public
-          cp -r client/dist/ ./public
+          cp ./client/index.html ./public
+          cp -r ./client/dist/ ./public
       - name: Set up Python 3.x
         uses: actions/setup-python@v2
         with:
