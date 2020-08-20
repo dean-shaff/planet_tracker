@@ -1,11 +1,18 @@
 import time
 import datetime
 import logging
+import os
 
 import ephem
 from aiohttp import web
 
 __version__ = "3.1.0"
+
+
+public_dir = "./client"
+
+if os.environ["MODE"] == "production" or os.environ["MODE"] == "prod":
+    public_dir = "./public"
 
 
 logger = logging.getLogger("planet-tracker")
@@ -70,11 +77,11 @@ async def get_astron_object_data(request):
 
 @routes.get("/")
 async def index(request):
-    return web.FileResponse("./client/index.html")
+    return web.FileResponse(os.path.join(public_dir, "index.html"))
 
 
 app.add_routes(routes)
-app.router.add_static("/", "./client")
+app.router.add_static("/", public_dir)
 
 
 if __name__ == '__main__':
