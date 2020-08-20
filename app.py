@@ -9,13 +9,16 @@ from aiohttp import web
 __version__ = "3.1.0"
 
 
+logger = logging.getLogger("planet-tracker")
+
 public_dir = "./client"
 
-if os.environ["MODE"] == "production" or os.environ["MODE"] == "prod":
-    public_dir = "./public"
+if "MODE" in os.environ:
+    if os.environ["MODE"] == "production" or os.environ["MODE"] == "prod":
+        public_dir = "./public"
 
+logger.info(f"public_dir={public_dir}")
 
-logger = logging.getLogger("planet-tracker")
 routes = web.RouteTableDef()
 app = web.Application()
 
