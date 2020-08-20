@@ -11,7 +11,24 @@ jobs:
     steps:
       - name: Get recent builds
         run: |
-          curl -n https://api.heroku.com/apps/planet-tracker/builds -H 'Accept: application/vnd.heroku+json; version=3' -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}"
+          curl -n https://api.heroku.com/apps/planet-tracker/builds \
+          -H 'Accept: application/vnd.heroku+json; version=3' \
+          -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}"
+
+
+  make-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Make tarball
+        run: |
+          pwd
+          cd ..
+          tar -czf planet-tracker.tar.gz planet-tracker
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: planet-tracker.tar.gz
 
 
   start-build-pipeline:
