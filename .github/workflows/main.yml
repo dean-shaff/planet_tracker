@@ -25,11 +25,15 @@ jobs:
         run: |
           cd ..
           tar -czf planet-tracker.tar.gz planet-tracker
+      - name: ls
+        run: |
+          pwd
+          ls
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
           name: build
-          path: planet-tracker.tar.gz
+          path: ./../planet-tracker.tar.gz
 
 
   start-build-pipeline:
