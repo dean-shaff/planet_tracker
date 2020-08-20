@@ -6,19 +6,6 @@ on:
 
 jobs:
 
-  # client-test:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v2
-  #     - name: Pull latest changes from client repo
-  #       run: |
-  #         git submodule update --init --recursive
-  #         git pull --recurse-submodules
-  #     - name: List contents of client
-  #       run: ls client
-
-
   start-build-pipeline:
     runs-on: ubuntu-latest
     steps:
@@ -69,3 +56,10 @@ jobs:
           git add client public requirements.txt
           git commit -m "update client, public and requirements.txt" || echo "No changes to commit"
           git push origin ${GITHUB_REF##*/} || echo "No changes to commit"
+      - name: Start new Heroku build
+        run: |
+          curl -n -X POST https://api.heroku.com/apps/planet-tracker/builds \
+          -d '{"source_blob":{"url":"https://github.com/dean-shaff/planet-tracker/archive/master.tar.gz"}}' \
+          -H 'Accept: application/vnd.heroku+json; version=3' \
+          -H "Content-Type: application/json"
+          -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}"

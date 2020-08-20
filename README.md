@@ -1,4 +1,4 @@
-## Planet Tracker Server v3.1.0
+## Planet Tracker Server
 
 A simple Flask app for tracking the positions of planets in the sky. This is
 the server code. Head [here](https://github.com/dean-shaff/planet-tracker_client)
