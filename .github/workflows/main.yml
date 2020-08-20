@@ -6,6 +6,16 @@ on:
 
 jobs:
 
+  heroku-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get recent builds
+        run: |
+          curl -n https://api.heroku.com/apps/planet-tracker/builds \
+          -H 'Accept: application/vnd.heroku+json; version=3' \
+          -H "Authorization: Bearer ${{ secrets.HEROKU_API_KEY }}"
+
+
   start-build-pipeline:
     runs-on: ubuntu-latest
     steps:
