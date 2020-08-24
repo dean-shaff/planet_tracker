@@ -1,7 +1,9 @@
 name: Heroku Deploy
 
-on: [push, repository_dispatch]
-
+on:
+  push:
+  repository_dispatch:
+    
 jobs:
 
   # start-build-pipeline:
