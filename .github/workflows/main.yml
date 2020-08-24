@@ -1,8 +1,6 @@
 name: Heroku Deploy
 
-on:
-  push:
-  repository_dispatch:
+on: [push, repository_dispatch]
 
 jobs:
 
@@ -18,7 +16,7 @@ jobs:
   #         --data '{"event_type": "start_build", "client_payload": { "repository": "'"$GITHUB_REPOSITORY"'" }}'
 
   heroku-deploy:
-    # if: github.event.action == 'build_completed'
+    if: github.event.action == 'build' || github.event_name == "push"
     runs-on: ubuntu-latest
     steps:
       # - name: Install Heroku CLI
