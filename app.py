@@ -6,7 +6,7 @@ import os
 import ephem
 from aiohttp import web
 
-__version__ = "3.1.0"
+__version__ = "3.1.1"
 
 
 logger = logging.getLogger("planet-tracker")
@@ -84,7 +84,7 @@ async def index(request):
 
 
 app.add_routes(routes)
-app.router.add_static("/", public_dir)
+app.router.add_static("/", os.path.join(public_dir, "dist"))
 
 
 if __name__ == '__main__':

@@ -35,3 +35,7 @@ use of web sockets.
 
 - Using poetry instead of pipenv.
 - Add next rising time to data sent to client
+
+### 3.1.1
+
+- Change locations of public directories
