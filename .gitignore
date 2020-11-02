@@ -7,4 +7,12 @@ static/deprecated/
 *.zip
 client/node_modules
 
-token 
+token
+
+notes.md
+
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
