@@ -17,7 +17,7 @@ if "MODE" in os.environ:
     if os.environ["MODE"] == "production" or os.environ["MODE"] == "prod":
         public_dir = "./public"
 
-logger.info(f"os.environ['MODE']={os.environ['MODE']}")
+logger.info(f"os.environ['MODE']={os.environ.get('MODE')}")
 logger.info(f"public_dir={public_dir}")
 
 routes = web.RouteTableDef()
