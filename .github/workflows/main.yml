@@ -58,7 +58,7 @@ jobs:
           poetry update
       - name: Recreate requirements.txt
         run: |
-          poetry export -f requirements.txt > requirements.txt
+          poetry export -f requirements.txt --without-hashes > requirements.txt
       - name: Push requirements.txt and new client changes to Github
         run: |
           git config --global user.name '${GITHUB_ACTOR}'
