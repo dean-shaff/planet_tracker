@@ -10,7 +10,6 @@ COPY . /planet-tracker
 
 RUN poetry install
 
-EXPOSE 8000
+EXPOSE 8080
 
-# CMD ["poetry", "run", "python", "app.py"]
-CMD ["poetry", "run", "gunicorn", "app:app", "--worker-class", "aiohttp.GunicornWebWorker", "--bind", "0.0.0.0:8000"]
+CMD ["poetry", "run", "gunicorn", "app:app", "--worker-class", "aiohttp.GunicornWebWorker", "--bind", "0.0.0.0:8080"]
