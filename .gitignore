@@ -7,7 +7,10 @@ static/deprecated/
 *.zip
 client/node_modules
 
+# keys n tokens
 token
+dean-cli.pem
+
 
 notes.md
 

@@ -7,17 +7,11 @@ services:
       dockerfile: Dockerfile_nginx
     ports:
       - '80:80'
-    networks:
-      - apinet
+    depends_on:
+      - api
   api:
     build:
       context: .
       dockerfile: Dockerfile
     expose:
       - "8080"
-    networks:
-      - apinet
-
-
-networks:
-  apinet:
